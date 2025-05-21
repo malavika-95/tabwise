@@ -1,0 +1,1139 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tabwise - Organize Your Browser Tabs Effortlessly</title>
+<meta name="description" content="Tabwise is a Chrome extension for browser tab management, offering tab categorization, session saving, and cloud sync to boost productivity."/>
+<meta name="keywords" content="Tabwise, browser tab management, Chrome extension, tab organizer, productivity"/>
+<meta name="author" content="Tabwise Team"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://www.tabwise.app/"/>
+<meta property="og:title" content="Tabwise - Organize Your Browser Tabs Effortlessly"/>
+<meta property="og:description" content="Manage browser tabs with Tabwise's Chrome extension featuring tab categorization, session saving, and cloud sync."/>
+<meta property="og:image" content="https://www.tabwise.app/logo.png"/>
+<meta property="og:url" content="https://www.tabwise.app/"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Tabwise - Organize Your Browser Tabs Effortlessly"/>
+<meta name="twitter:description" content="Manage browser tabs with Tabwise's Chrome extension for productivity."/>
+<meta name="twitter:image" content="https://www.tabwise.app/logo.png"/>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.9/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { font-family: 'Inter', 'Nunito', sans-serif; }
+    .category.dragging { opacity: 0.5; }
+    .category.drop-target { border: 2px dashed #3B82F6; }
+    .tab-item.dragging { opacity: 0.5; }
+    .tab-item.drop-target { border: 2px dashed #3B82F6; }
+    .error-boundary { color: red; text-align: center; padding: 16px; }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-700">
+<div id="root"></div>
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Error Boundary Component
+    class ErrorBoundary extends React.Component {
+      state = { hasError: false, error: null };
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+      render() {
+        if (this.state.hasError) {
+          return <div className="error-boundary">Something went wrong: {this.state.error?.message || 'Unknown error'}</div>;
+        }
+        return this.props.children;
+      }
+    }
+
+    // Navigation Component
+    const Navbar = () => (
+      <nav className="bg-white shadow-sm fixed w-full z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <a href="/" className="flex-shrink-0 flex items-center">
+                <img src="/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+                <span className="ml-2 text-xl font-bold text-blue-900">Tabwise</span>
+              </a>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a href="#features" className="text-gray-600 hover:text-blue-600">Features</a>
+              <a href="#pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
+              <a href="#demo" className="text-gray-600 hover:text-blue-600">Demo</a>
+              <a href="#blog" className="text-gray-600 hover:text-blue-600">Blog</a>
+              <a href="#" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Add to Chrome</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+
+    // Hero Component
+    const Hero = () => (
+      <section className="pt-24 pb-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">
+            Tabwise: Organize Your Browser Tabs Effortlessly
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Save and categorize browser tabs with Tabwise’s Chrome extension. Stay productive and focused. <a href="/blog.html" className="text-blue-500 hover:text-blue-600">Explore our blog</a> for tips.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <a href="#demo" className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 text-lg">
+              See It in Action
+            </a>
+            <a href="#pricing" className="border border-blue-900 text-blue-900 px-6 py-3 rounded-md hover:bg-blue-50 text-lg">
+              View Plans
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+
+    // Features Component
+    const Features = () => (
+      <section id="features" className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Why Tabwise?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: "Auto-Organize Tabs", desc: "Group tabs by project or topic automatically. Read our <a href='/blog/tabwise-productivity-benefits.html' className='text-blue-500 hover:text-blue-600'>productivity guide</a>." },
+              { title: "Drag & Drop", desc: "Rearrange tabs to match your workflow. See our <a href='/terms.html' className='text-blue-500 hover:text-blue-600'>Terms of Service</a> for usage details." },
+              { title: "Stay in Flow", desc: "Save sessions and resume work seamlessly." },
+            ].map((feature, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-sm text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-medium text-blue-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: feature.desc }}></p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+
+    // Pricing Component
+    const Pricing = () => (
+      <section id="pricing" className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Simple, Transparent Pricing</h2>
+          <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+            Whether you're just getting started or managing hundreds of tabs, Tabwise has a plan for you. Choose what suits your workflow best.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                plan: "Free",
+                price: "$0/mo",
+                desc: "Perfect for casual users who want basic tab organization. <a href='/contact.html' className='text-blue-500 hover:text-blue-600'>Contact us</a> for support.",
+                features: [
+                  "Save up to 10 tabs per category",
+                  "Manual session save/restore",
+                  "Light/Dark theme support",
+                ],
+                cta: "Get Started",
+              },
+              {
+                plan: "Pro",
+                price: "$2/mo or $20/yr",
+                desc: "Ideal for daily users who want enhanced productivity features.",
+                features: [
+                  "Unlimited categories and tab saves",
+                  "AI-powered auto-categorization",
+                  "Bulk tab operations",
+                  "Export & import tab library",
+                  "Cloud sync across devices",
+                ],
+                cta: "Go Pro",
+              },
+              {
+                plan: "Lifetime",
+                price: "$25 one-time",
+                desc: "Best for power users. Get all Pro features for life. See <a href='/blog/best-tab-extensions-chrome-2025.html' className='text-blue-500 hover:text-blue-600'>top Chrome extensions</a>.",
+                features: [
+                  "All Pro features for life",
+                  "No recurring fees",
+                  "Lifetime updates and upgrades",
+                ],
+                cta: "Get Lifetime",
+              },
+            ].map((plan, index) => (
+              <div key={index} className="bg-gray-50 p-6 rounded-lg shadow-sm text-center">
+                <h3 className="text-2xl font-medium text-blue-900 mb-2">{plan.plan}</h3>
+                <p className="text-4xl font-bold text-blue-900 mb-4">{plan.price}</p>
+                <p className="text-gray-600 mb-6" dangerouslySetInnerHTML={{ __html: plan.desc }}></p>
+                <ul className="text-gray-600 mb-8 space-y-2">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-center justify-center">
+                      <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="#"
+                  className={`inline-block px-6 py-3 rounded-md text-lg ${
+                    plan.plan === "Pro"
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : "border border-blue-900 text-blue-900 hover:bg-blue-50"
+                  }`}
+                >
+                  {plan.cta}
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+
+    // Interactive Demo Component
+    const Demo = () => {
+      const [categories, setCategories] = useState([
+        { name: "Work", tabs: [{ title: "Project Plan", url: "https://example.com", note: "" }] },
+        { name: "Personal", tabs: [{ title: "Shopping List", url: "https://example.com", note: "Buy groceries" }] },
+      ]);
+      const [filteredCategories, setFilteredCategories] = useState(categories);
+      const [collapsedCategories, setCollapsedCategories] = useState(new Set());
+      const [sortPreference, setSortPreference] = useState("name-asc");
+      const [activeTab, setActiveTab] = useState("create");
+      const [theme, setTheme] = useState("light");
+      const [searchQuery, setSearchQuery] = useState("");
+      const [lastAction, setLastAction] = useState(null);
+      const [showSettings, setShowSettings] = useState(false);
+      const [error, setError] = useState("");
+
+      const showError = (message) => {
+        setError(message);
+        setTimeout(() => setError(""), 3000);
+      };
+
+      const applySort = (cats) => {
+        return [...cats].sort((a, b) => {
+          if (sortPreference === "name-asc") return a.name.localeCompare(b.name);
+          if (sortPreference === "name-desc") return b.name.localeCompare(b.name);
+          if (sortPreference === "tabs-asc") return a.tabs.length - b.tabs.length;
+          if (sortPreference === "tabs-desc") return b.tabs.length - a.tabs.length;
+          return 0;
+        });
+      };
+
+      const updateCategoryDropdown = () => {
+        const dropdown = document.getElementById("addToCategory");
+        if (dropdown) {
+          dropdown.innerHTML = '<option value="">Select category to add tabs</option>';
+          categories.forEach((cat, index) => {
+            const option = document.createElement("option");
+            option.value = index;
+            option.textContent = cat.name;
+            dropdown.appendChild(option);
+          });
+        }
+      };
+
+      const deduplicateTabs = (existingTabs, newTabs) => {
+        const existingUrls = new Set(existingTabs.map(tab => tab.url));
+        const uniqueTabs = newTabs.filter(tab => !existingUrls.has(tab.url));
+        const skippedCount = newTabs.length - uniqueTabs.length;
+        return { uniqueTabs, skippedCount };
+      };
+
+      const toggleCategory = (categoryName) => {
+        const newCollapsed = new Set(collapsedCategories);
+        if (newCollapsed.has(categoryName)) {
+          newCollapsed.delete(categoryName);
+        } else {
+          newCollapsed.add(categoryName);
+        }
+        setCollapsedCategories(newCollapsed);
+      };
+
+      const addCategory = () => {
+        const nameInput = document.getElementById("newCategory");
+        const name = nameInput?.value?.trim();
+        if (!name) {
+          showError("Please enter a category name");
+          return;
+        }
+        const newCategories = [...categories, { name, tabs: [] }];
+        setCategories(newCategories);
+        setFilteredCategories(applySort(newCategories));
+        nameInput.value = "";
+        setActiveTab("create");
+        updateCategoryDropdown();
+      };
+
+      const deleteCategory = (catIndex) => {
+        if (window.confirm("Delete this category?")) {
+          const category = categories[catIndex];
+          setLastAction({
+            type: "delete-category",
+            index: catIndex,
+            category,
+            wasCollapsed: collapsedCategories.has(category.name),
+          });
+          const newCategories = categories.filter((_, i) => i !== catIndex);
+          const newCollapsed = new Set(collapsedCategories);
+          newCollapsed.delete(category.name);
+          setCategories(newCategories);
+          setFilteredCategories(applySort(newCategories));
+          setCollapsedCategories(newCollapsed);
+          updateCategoryDropdown();
+          setTimeout(() => setLastAction(null), 5000);
+        }
+      };
+
+      const editCategoryName = (catIndex) => {
+        const oldName = categories[catIndex].name;
+        const newName = prompt("Enter new category name:", oldName);
+        if (newName && newName.trim()) {
+          const newCategories = [...categories];
+          newCategories[catIndex].name = newName.trim();
+          const newCollapsed = new Set(collapsedCategories);
+          if (newCollapsed.has(oldName)) {
+            newCollapsed.delete(oldName);
+            newCollapsed.add(newName.trim());
+          }
+          setCategories(newCategories);
+          setFilteredCategories(applySort(newCategories));
+          setCollapsedCategories(newCollapsed);
+          updateCategoryDropdown();
+        }
+      };
+
+      const addTabsToCategory = (catIndex) => {
+        const newTabs = [
+          { title: `Sample Tab ${categories[catIndex].tabs.length + 1}`, url: "https://example.com", note: "" },
+        ];
+        const { uniqueTabs, skippedCount } = deduplicateTabs(categories[catIndex].tabs, newTabs);
+        const newCategories = [...categories];
+        newCategories[catIndex].tabs.push(...uniqueTabs);
+        setCategories(newCategories);
+        setFilteredCategories(applySort(newCategories));
+        setActiveTab("create");
+        if (skippedCount > 0) {
+          showError(`Skipped ${skippedCount} duplicate tab(s)`);
+        }
+      };
+
+      const deleteTab = (catIndex, tabIndex) => {
+        if (window.confirm("Remove this tab?")) {
+          setLastAction({
+            type: "delete-tabs",
+            catIndex,
+            deletedTabs: [{ index: tabIndex, tab: categories[catIndex].tabs[tabIndex] }],
+          });
+          const newCategories = [...categories];
+          newCategories[catIndex].tabs.splice(tabIndex, 1);
+          setCategories(newCategories);
+          setFilteredCategories(applySort(newCategories));
+          setTimeout(() => setLastAction(null), 5000);
+        }
+      };
+
+      const editTabNote = (catIndex, tabIndex) => {
+        const tab = categories[catIndex].tabs[tabIndex];
+        const newNote = prompt("Enter note for this tab:", tab.note || "");
+        if (newNote !== null) {
+          const newCategories = [...categories];
+          newCategories[catIndex].tabs[tabIndex].note = newNote.trim();
+          setCategories(newCategories);
+          setFilteredCategories(applySort(newCategories));
+        }
+      };
+
+      const handleDragStart = (e, type, catIndex, tabIndex = null) => {
+        e.currentTarget.classList.add("dragging");
+        e.dataTransfer.setData("text/plain", JSON.stringify({ type, catIndex, tabIndex }));
+      };
+
+      const handleDragEnd = (e) => {
+        e.currentTarget.classList.remove("dragging");
+        document.querySelectorAll(".drop-target").forEach(el => el.classList.remove("drop-target"));
+      };
+
+      const handleDragOver = (e) => {
+        e.preventDefault();
+        e.currentTarget.classList.add("drop-target");
+      };
+
+      const handleDragLeave = (e) => {
+        e.currentTarget.classList.remove("drop-target");
+      };
+
+      const handleDrop = (e, toCatIndex, toTabIndex = null) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove("drop-target");
+        const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+        const newCategories = [...categories];
+
+        if (data.type === "category") {
+          const fromIndex = data.catIndex;
+          if (fromIndex !== toCatIndex) {
+            const [moved] = newCategories.splice(fromIndex, 1);
+            newCategories.splice(toCatIndex, 0, moved);
+            setCategories(newCategories);
+            setFilteredCategories(applySort(newCategories));
+          }
+        } else if (data.type === "tab") {
+          const { catIndex: fromCatIndex, tabIndex: fromTabIndex } = data;
+          if (fromCatIndex !== toCatIndex || (toTabIndex !== null && fromTabIndex !== toTabIndex)) {
+            const [moved] = newCategories[fromCatIndex].tabs.splice(fromTabIndex, 1);
+            if (fromCatIndex === toCatIndex && toTabIndex !== null) {
+              newCategories[toCatIndex].tabs.splice(toTabIndex, 0, moved);
+            } else {
+              newCategories[toCatIndex].tabs.push(moved);
+            }
+            setCategories(newCategories);
+            setFilteredCategories(applySort(newCategories));
+          }
+        }
+      };
+
+      const searchCategories = () => {
+        if (!searchQuery) {
+          setFilteredCategories(applySort(categories));
+        } else {
+          const query = searchQuery.toLowerCase().trim();
+          const filtered = categories
+            .map(category => ({
+              ...category,
+              tabs: category.tabs.filter(tab =>
+                tab.title.toLowerCase().includes(query) ||
+                tab.url.toLowerCase().includes(query) ||
+                (tab.note && tab.note.toLowerCase().includes(query))
+              ),
+            }))
+            .filter(category => category.name.toLowerCase().includes(query) || category.tabs.length > 0);
+          setFilteredCategories(applySort(filtered));
+        }
+      };
+
+      const toggleTheme = () => {
+        setTheme(theme === "light" ? "dark" : "light");
+      };
+
+      useEffect(() => {
+        searchCategories();
+        updateCategoryDropdown();
+      }, [searchQuery, categories, sortPreference]);
+
+      return (
+        <section id="demo" className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Try Tabwise in Action</h2>
+            <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+              Test Tabwise’s browser tab management features with this interactive demo. Learn more in our <a href="/blog/browser-tab-management-guide.html" className="text-blue-500 hover:text-blue-600">tab management guide</a>.
+            </p>
+            <div
+              className={`p-4 rounded-lg shadow-sm max-w-md mx-auto ${
+                theme === "dark" ? "bg-gray-800 text-gray-200" : "bg-white text-gray-700"
+              }`}
+              style={{ width: "320px", maxHeight: "600px", overflowY: "auto" }}
+            >
+              {/* Header */}
+              <header className="flex justify-end items-center mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="relative w-36">
+                    <input
+                      id="search"
+                      type="text"
+                      placeholder="Search tabs..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className={`w-full p-1 text-sm border rounded-md ${
+                        theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                      }`}
+                    />
+                    <svg
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4"
+                      fill={theme === "dark" ? "#bbb" : "#666"}
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <button onClick={() => setShowSettings(!showSettings)} className="p-1">
+                    <svg className="w-4 h-4" fill={theme === "dark" ? "#66b0ff" : "#3B82F6"} viewBox="0 0 24 24">
+                      <path d="M4 12a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z" />
+                    </svg>
+                  </button>
+                  <button onClick={toggleTheme} className="p-1">
+                    <svg
+                      id="themeIcon"
+                      className="w-4 h-4"
+                      fill={theme === "dark" ? "#66b0ff" : "#3B82F6"}
+                      viewBox="0 0 24 24"
+                    >
+                      {theme === "light" ? (
+                        <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                      ) : (
+                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              </header>
+
+              {/* Settings Dropdown */}
+              {showSettings && (
+                <div
+                  className={`absolute right-4 mt-2 w-48 rounded-md shadow-lg ${
+                    theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300"
+                  } border z-10`}
+                >
+                  <div className="p-2">
+                    <div className="text-sm font-medium mb-1">Sort Categories</div>
+                    <select
+                      id="sortCategories"
+                      value={sortPreference}
+                      onChange={(e) => setSortPreference(e.target.value)}
+                      className={`w-full p-1 text-sm rounded-md ${
+                        theme === "dark" ? "bg-gray-600 text-gray-200" : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      <option value="name-asc">Name (A-Z)</option>
+                      <option value="name-desc">Name (Z-A)</option>
+                      <option value="tabs-asc">Tabs (Low to High)</option>
+                      <option value="tabs-desc">Tabs (High to Low)</option>
+                    </select>
+                    <hr className={`my-2 ${theme === "dark" ? "border-gray-600" : "border-gray-300"}`} />
+                    <button
+                      className={`w-full p-1 text-sm rounded-md text-left ${
+                        theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
+                      }`}
+                      onClick={() => alert("Auto-categorization not available in demo")}
+                    >
+                      Auto-Categorize Tabs
+                    </button>
+                    <button
+                      className={`w-full p-1 text-sm rounded-md text-left ${
+                        theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
+                      }`}
+                      onClick={() => alert("Export not available in demo")}
+                    >
+                      Export Categories
+                    </button>
+                    <button
+                      className={`w-full p-1 text-sm rounded-md text-left ${
+                        theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
+                      }`}
+                      onClick={() => alert("Import not available in demo")}
+                    >
+                      Import Categories
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tabs */}
+              <nav className="flex mb-2">
+                {["create", "manage"].map((tab) => (
+                  <button
+                    key={tab}
+                    data-tab={tab}
+                    className={`flex-1 p-2 text-sm rounded-md ${
+                      activeTab === tab
+                        ? theme === "dark"
+                          ? "bg-blue-400 text-white"
+                          : "bg-blue-500 text-white"
+                        : theme === "dark"
+                        ? "bg-gray-600 text-gray-200"
+                        : "bg-gray-200 text-gray-700"
+                    }`}
+                    onClick={() => setActiveTab(tab)}
+                  >
+                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                  </button>
+                ))}
+              </nav>
+
+              {/* Create Tab */}
+              <div
+                id="create"
+                className="tab-content"
+                style={{ display: activeTab === "create" ? "block" : "none" }}
+              >
+                <div className="flex flex-col gap-2">
+                  <input
+                    id="newCategory"
+                    type="text"
+                    placeholder="New category name"
+                    className={`p-2 text-sm border rounded-md ${
+                      theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                    }`}
+                  />
+                  <button
+                    id="addCategoryBtn"
+                    onClick={addCategory}
+                    className={`p-2 text-sm rounded-md ${
+                      theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
+                    } text-white`}
+                  >
+                    Add Category
+                  </button>
+                  <select
+                    id="addToCategory"
+                    className={`p-2 text-sm border rounded-md ${
+                      theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                    }`}
+                  >
+                    <option value="">Select category to add tabs</option>
+                    {categories.map((cat, index) => (
+                      <option key={index} value={index}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    id="addToCategoryBtn"
+                    onClick={() => {
+                      const dropdown = document.getElementById("addToCategory");
+                      const catIndex = parseInt(dropdown.value);
+                      if (isNaN(catIndex)) {
+                        showError("Please select a category");
+                        return;
+                      }
+                      addTabsToCategory(catIndex);
+                    }}
+                    className={`p-2 text-sm rounded-md ${
+                      theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
+                    } text-white`}
+                  >
+                    Add Tabs to Category
+                  </button>
+                </div>
+              </div>
+
+              {/* Manage Tab */}
+              <div
+                id="manage"
+                className="tab-content"
+                style={{ display: activeTab === "manage" ? "block" : "none" }}
+              >
+                <div id="categories">
+                  {filteredCategories.map((category, catIndex) => {
+                    const isCollapsed = collapsedCategories.has(category.name);
+                    return (
+                      <div
+                        key={catIndex}
+                        className={`category p-2 mb-2 rounded-md ${
+                          isCollapsed ? "collapsed" : ""
+                        } ${theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-300"} border`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, "category", catIndex)}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={(e) => handleDrop(e, catIndex)}
+                        data-cat-index={catIndex}
+                      >
+                        <h3 className="flex items-center text-base m-0">
+                          <span
+                            className="collapse-toggle cursor-pointer mr-1 font-bold w-5 text-center"
+                            onClick={() => toggleCategory(category.name)}
+                          >
+                            {isCollapsed ? "+" : "-"}
+                          </span>
+                          <span
+                            className="flex-1 cursor-pointer"
+                            onClick={() => editCategoryName(catIndex)}
+                          >
+                            {category.name}
+                          </span>
+                          <div className="flex gap-1">
+                            <button
+                              className={`p-1 border rounded-md ${
+                                theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                              }`}
+                              onClick={() => alert("Opening all tabs in new windows")}
+                              title="Open All Tabs"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              className={`p-1 border rounded-md ${
+                                theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                              }`}
+                              onClick={() => {
+                                const otherCats = categories.filter((_, i) => i !== catIndex);
+                                if (otherCats.length === 0) {
+                                  showError("Need at least two categories to merge");
+                                  return;
+                                }
+                                const targetIndex = prompt(
+                                  `Enter the index to merge "${category.name}" into:\n` +
+                                    otherCats.map((cat, i) => `${i}: ${cat.name}`).join("\n")
+                                );
+                                const target = parseInt(targetIndex);
+                                if (isNaN(target) || target < 0 || target >= otherCats.length) {
+                                  showError("Invalid category index");
+                                  return;
+                                }
+                                if (window.confirm(`Merge "${category.name}" into "${otherCats[target].name}"?`)) {
+                                  setLastAction({
+                                    type: "merge-categories",
+                                    sourceIndex: catIndex,
+                                    targetIndex: categories.findIndex((c) => c.name === otherCats[target].name),
+                                    sourceCategory: category,
+                                    targetTabsBefore: [...otherCats[target].tabs],
+                                    sourceWasCollapsed: collapsedCategories.has(category.name),
+                                  });
+                                  const newCategories = [...categories];
+                                  newCategories[
+                                    categories.findIndex((c) => c.name === otherCats[target].name)
+                                  ].tabs.push(...category.tabs);
+                                  newCategories.splice(catIndex, 1);
+                                  const newCollapsed = new Set(collapsedCategories);
+                                  newCollapsed.delete(category.name);
+                                  setCategories(newCategories);
+                                  setFilteredCategories(applySort(newCategories));
+                                  setCollapsedCategories(newCollapsed);
+                                  updateCategoryDropdown();
+                                  setTimeout(() => setLastAction(null), 5000);
+                                }
+                              }}
+                              title="Merge Category"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M19 11H5m14 0l-4-4m4 4l-4 4"
+                                />
+                              </svg>
+                            </button>
+                            <button
+                              className={`p-1 border rounded-md ${
+                                theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                              }`}
+                              onClick={() => deleteCategory(catIndex)}
+                              title="Delete Category"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </h3>
+                        {!isCollapsed &&
+                          category.tabs.map((tab, tabIndex) => (
+                            <div key={tabIndex}>
+                              <div
+                                className={`tab-item flex items-center p-1 mt-1 rounded-md ${
+                                  theme === "dark" ? "bg-gray-600 border-gray-500" : "bg-white border-gray-200"
+                                } border`}
+                                draggable
+                                onDragStart={(e) => handleDragStart(e, "tab", catIndex, tabIndex)}
+                                onDragEnd={handleDragEnd}
+                                onDragOver={handleDragOver}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, catIndex, tabIndex)}
+                                data-cat-index={catIndex}
+                                data-tab-index={tabIndex}
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="mr-1"
+                                  onChange={() => {
+                                    const checkboxes = document.querySelectorAll(
+                                      `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]`
+                                    );
+                                    const selectAll = document.querySelector(
+                                      `.select-all-checkbox[data-cat-index="${catIndex}"]`
+                                    );
+                                    const checkedCount = Array.from(checkboxes).filter((cb) => cb.checked).length;
+                                    selectAll.checked = checkedCount === checkboxes.length && checkboxes.length > 0;
+                                    selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+                                  }}
+                                />
+                                <span
+                                  className="flex-1 cursor-pointer"
+                                  onClick={() => {
+                                    const newTitle = prompt("Edit tab title:", tab.title);
+                                    const newUrl = prompt("Edit tab URL:", tab.url);
+                                    if (newTitle && newUrl) {
+                                      const newCategories = [...categories];
+                                      newCategories[catIndex].tabs[tabIndex] = {
+                                        title: newTitle.trim(),
+                                        url: newUrl.trim(),
+                                        note: tab.note,
+                                      };
+                                      setCategories(newCategories);
+                                      setFilteredCategories(applySort(newCategories));
+                                    }
+                                  }}
+                                >
+                                  {tab.title}
+                                </span>
+                                <button
+                                  className="text-xs p-1"
+                                  onClick={() => editTabNote(catIndex, tabIndex)}
+                                >
+                                  {tab.note ? "Edit Note" : "Add Note"}
+                                </button>
+                                <button
+                                  className="text-xs p-1"
+                                  onClick={() => deleteTab(catIndex, tabIndex)}
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                              {tab.note && (
+                                <div
+                                  className={`tab-note ml-5 italic ${
+                                    theme === "dark" ? "text-gray-400" : "text-gray-600"
+                                  }`}
+                                >
+                                  {tab.note}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        {!isCollapsed && (
+                          <div className="bulk-actions flex items-center mt-1">
+                            <label className="select-all mr-2 flex items-center">
+                              <input
+                                type="checkbox"
+                                className="select-all-checkbox mr-1"
+                                data-cat-index={catIndex}
+                                onChange={(e) => {
+                                  const checkboxes = document.querySelectorAll(
+                                    `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]`
+                                  );
+                                  checkboxes.forEach((cb) => (cb.checked = e.target.checked));
+                                  e.target.indeterminate = false;
+                                }}
+                              />
+                              Select All
+                            </label>
+                            <select
+                              className="p-1 text-sm rounded-md"
+                              onChange={(e) => {
+                                const action = e.target.value;
+                                const checkboxes = document.querySelectorAll(
+                                  `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]:checked`
+                                );
+                                const selectedIndices = Array.from(checkboxes)
+                                  .map((cb) => parseInt(cb.parentElement.dataset.tabIndex))
+                                  .sort((a, b) => b - a);
+                                if (selectedIndices.length === 0) {
+                                  showError("No tabs selected");
+                                  e.target.value = "";
+                                  return;
+                                }
+                                if (action === "delete") {
+                                  if (window.confirm(`Delete ${selectedIndices.length} selected tab(s)?`)) {
+                                    setLastAction({
+                                      type: "delete-tabs",
+                                      catIndex,
+                                      deletedTabs: selectedIndices.map((index) => ({
+                                        index,
+                                        tab: categories[catIndex].tabs[index],
+                                      })),
+                                    });
+                                    const newCategories = [...categories];
+                                    selectedIndices.forEach((index) =>
+                                      newCategories[catIndex].tabs.splice(index, 1)
+                                    );
+                                    setCategories(newCategories);
+                                    setFilteredCategories(applySort(newCategories));
+                                    setTimeout(() => setLastAction(null), 5000);
+                                  }
+                                } else if (action === "move") {
+                                  const otherCats = categories.filter((_, i) => i !== catIndex);
+                                  const targetIndex = prompt(
+                                    `Enter the index to move ${selectedIndices.length} tab(s) to:\n` +
+                                      otherCats.map((cat, i) => `${i}: ${cat.name}`).join("\n")
+                                  );
+                                  const target = parseInt(targetIndex);
+                                  if (isNaN(target) || target < 0 || target >= otherCats.length) {
+                                    showError("Invalid category index");
+                                    e.target.value = "";
+                                    return;
+                                  }
+                                  const newCategories = [...categories];
+                                  const movedTabs = selectedIndices.map(
+                                    (index) => newCategories[catIndex].tabs[index]
+                                  );
+                                  const { uniqueTabs } = deduplicateTabs(
+                                    newCategories[categories.findIndex((c) => c.name === otherCats[target].name)]
+                                      .tabs,
+                                    movedTabs
+                                  );
+                                  newCategories[
+                                    categories.findIndex((c) => c.name === otherCats[target].name)
+                                  ].tabs.push(...uniqueTabs);
+                                  selectedIndices.forEach((index) =>
+                                    newCategories[catIndex].tabs.splice(index, 1)
+                                  );
+                                  setCategories(newCategories);
+                                  setFilteredCategories(applySort(newCategories));
+                                } else if (action === "open") {
+                                  alert(`Opening ${selectedIndices.length} selected tabs`);
+                                }
+                                e.target.value = "";
+                              }}
+                            >
+                              <option value="">Bulk Actions</option>
+                              <option value="delete">Delete Selected</option>
+                              <option value="move">Move to Category</option>
+                              <option value="open">Open Selected</option>
+                            </select>
+                          </div>
+                        )}
+                        {!isCollapsed && (
+                          <button
+                            className="mt-1 p-1 text-sm w-full rounded-md"
+                            onClick={() => addTabsToCategory(catIndex)}
+                          >
+                            Add Current Tabs
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {filteredCategories.length === 0 && <p className="text-sm">No categories to display.</p>}
+                </div>
+              </div>
+
+              {/* Error and Undo */}
+              {error && (
+                <div
+                  className={`text-center text-sm mt-2 ${theme === "dark" ? "text-red-400" : "text-red-500"}`}
+                >
+                  {error}
+                </div>
+              )}
+              {lastAction && (
+                <button
+                  className={`w-full p-2 text-sm rounded-md mt-2 ${
+                    theme === "dark" ? "bg-red-500 hover:bg-red-600" : "bg-red-600 hover:bg-red-700"
+                  } text-white`}
+                  onClick={() => {
+                    const newCategories = [...categories];
+                    if (lastAction.type === "delete-tabs") {
+                      lastAction.deletedTabs.forEach(({ index, tab }) => {
+                        newCategories[lastAction.catIndex].tabs.splice(index, 0, tab);
+                      });
+                    } else if (lastAction.type === "delete-category") {
+                      newCategories.splice(lastAction.index, 0, lastAction.category);
+                      if (lastAction.wasCollapsed) {
+                        setCollapsedCategories(
+                          new Set([...collapsedCategories, lastAction.category.name])
+                        );
+                      }
+                    } else if (lastAction.type === "merge-categories") {
+                      newCategories.splice(lastAction.sourceIndex, 0, lastAction.sourceCategory);
+                      newCategories[lastAction.targetIndex].tabs = lastAction.targetTabsBefore;
+                      if (lastAction.sourceWasCollapsed) {
+                        setCollapsedCategories(
+                          new Set([...collapsedCategories, lastAction.sourceCategory.name])
+                        );
+                      }
+                    }
+                    setCategories(newCategories);
+                    setFilteredCategories(applySort(newCategories));
+                    setLastAction(null);
+                  }}
+                >
+                  Undo
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    // Blog Component
+    const Blog = () => (
+      <section id="blog" className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Tabwise Blog</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                title: "10 Ways Tabwise Boosts Your Productivity",
+                desc: "Learn how Tabwise enhances your workflow with smart tab management features.",
+                link: "/blog/tabwise-productivity-benefits.html",
+                image: "/blog/images/tabwise-productivity-benefits.jpg",
+              },
+              {
+                title: "Tabwise vs OneTab: Which Is Better?",
+                desc: "Compare Tabwise and OneTab for efficient browser tab organization.",
+                link: "/blog/tabwise-vs-onetab-comparison.html",
+                image: "/blog/images/tabwise-vs-onetab-comparison.jpg",
+              },
+              {
+                title: "Ultimate Guide to Managing Browser Tabs",
+                desc: "Master tab management with our expert strategies and tips.",
+                link: "/blog/browser-tab-management-guide.html",
+                image: "/blog/images/browser-tab-management-guide.jpg",
+              },
+              {
+                title: "Top Chrome Extensions for 2025",
+                desc: "Discover the best tools for organizing browser tabs, including Tabwise.",
+                link: "/blog/best-tab-extensions-chrome-2025.html",
+                image: "/blog/images/best-tab-extensions-chrome-2025.jpg",
+              },
+            ].map((post, index) => (
+              <div key={index} className="bg-gray-50 p-6 rounded-lg shadow-sm">
+                <img src={post.image} alt={`${post.title} blog image`} className="w-full h-48 object-cover rounded-t-lg mb-4"/>
+                <h3 className="text-xl font-medium text-blue-900 mb-2">{post.title}</h3>
+                <p className="text-gray-600 mb-4">{post.desc}</p>
+                <a href={post.link} className="text-blue-500 hover:text-blue-600">Read More</a>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <a href="/blog.html" className="text-blue-500 hover:text-blue-600 font-medium">View All Blog Posts</a>
+          </div>
+        </div>
+      </section>
+    );
+
+    // Footer Component
+    const Footer = () => (
+      <footer className="bg-blue-900 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-4 md:mb-0">
+              <img src="/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+              <span className="ml-2 text-lg font-medium">Tabwise</span>
+            </div>
+            <div className="flex space-x-4">
+              <a href="/privacy.html" className="hover:text-blue-300" rel="noopener noreferrer">Privacy</a>
+              <a href="/terms.html" className="hover:text-blue-300" rel="noopener noreferrer">Terms</a>
+              <a href="/contact.html" className="hover:text-blue-300" rel="noopener noreferrer">Contact</a>
+            </div>
+          </div>
+          <p className="text-center mt-4 text-gray-400">© 2025 Tabwise. All rights reserved.</p>
+        </div>
+      </footer>
+    );
+
+    // Main App Component
+    const App = () => (
+      <ErrorBoundary>
+        <div>
+          <Navbar />
+          <Hero />
+          <Features />
+          <Pricing />
+          <Demo />
+          <Blog />
+          <Footer />
+        </div>
+      </ErrorBoundary>
+    );
+
+    // Render the App
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+</script>
+</body>
+</html>
