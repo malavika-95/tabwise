@@ -1,4 +1,439 @@
-<script type="text/javascript">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tabwise - Organize Your Browser Tabs Effortlessly</title>
+<meta name="description" content="Tabwise Chrome extension helps you manage browser tabs with smart categorization, session saving, and cloud sync for enhanced productivity."/>
+<meta name="keywords" content="Tabwise, browser tab management, Chrome extension, tab organizer, productivity tools, tab management, session saving, cloud sync"/>
+<meta name="author" content="Tabwise Team"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://www.tabwise.app/"/>
+<meta property="og:title" content="Tabwise - Organize Your Browser Tabs Effortlessly"/>
+<meta property="og:description" content="Boost productivity with Tabwise's Chrome extension for browser tab management, featuring smart categorization and cloud sync."/>
+<meta property="og:image" content="https://www.tabwise.app/logo.png"/>
+<meta property="og:url" content="https://www.tabwise.app/"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Tabwise - Organize Your Browser Tabs Effortlessly"/>
+<meta name="twitter:description" content="Manage browser tabs efficiently with Tabwise's Chrome extension for productivity."/>
+<meta name="twitter:image" content="https://www.tabwise.app/logo.png"/>
+<!-- Production Tailwind CSS -->
+<link href="/dist/output.css" rel="stylesheet">
+<!-- React and Babel CDN -->
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.9/babel.min.js"></script>
+<!-- Structured Data for SEO -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Tabwise",
+  "operatingSystem": "Web",
+  "applicationCategory": "Productivity",
+  "description": "Tabwise is a Chrome extension for browser tab management, offering smart categorization, session saving, and cloud sync to boost productivity.",
+  "offers": [
+    {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "name": "Free Plan"
+    },
+    {
+      "@type": "Offer",
+      "price": "2",
+      "priceCurrency": "USD",
+      "name": "Pro Plan Monthly"
+    },
+    {
+      "@type": "Offer",
+      "price": "20",
+      "priceCurrency": "USD",
+      "name": "Pro Plan Yearly"
+    },
+    {
+      "@type": "Offer",
+      "price": "25",
+      "priceCurrency": "USD",
+      "name": "Lifetime Plan"
+    }
+  ],
+  "url": "https://www.tabwise.app",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Tabwise Team"
+  }
+}
+</script>
+<style>
+    body { font-family: 'Inter', 'Nunito', sans-serif; }
+    .error-boundary { color: red; text-align: center; padding: 16px; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 20; }
+    .modal-content { background: white; margin: 15% auto; padding: 20px; width: 90%; max-width: 500px; border-radius: 8px; position: relative; }
+    .modal-content.dark { background: #1F2937; color: #E5E7EB; }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-700">
+<div id="root"></div>
+<!-- Email Signup Modal -->
+<div id="emailModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">×</span>
+    <h2 class="text-2xl font-bold text-blue-900 mb-4">Join the Tabwise Waitlist</h2>
+    <p class="text-gray-600 mb-6">The Tabwise Chrome extension is coming soon! Leave your email to get notified when it's live.</p>
+    <div class="flex flex-col gap-4">
+      <input
+        type="email"
+        id="emailInput"
+        placeholder="Enter your email"
+        class="p-2 border rounded-md text-gray-700"
+      />
+      <button
+        id="submitEmail"
+        class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+      >
+        Join Waitlist
+      </button>
+    </div>
+  </div>
+</div>
+<script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Error Boundary Component
+    class ErrorBoundary extends React.Component {
+      state = { hasError: false, error: null };
+      static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+      }
+      render() {
+        if (this.state.hasError) {
+          return <div className="error-boundary">Something went wrong: {this.state.error?.message || 'Unknown error'}</div>;
+        }
+        return this.props.children;
+      }
+    }
+
+    // Navigation Component
+    const Navbar = () => (
+      <nav className="bg-white shadow-sm fixed w-full z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              <a href="/" className="flex-shrink-0 flex items-center">
+                <img src="/tabwise/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+                <span className="ml-2 text-xl font-bold text-blue-900">Tabwise</span>
+              </a>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a href="#features" className="text-gray-600 hover:text-blue-600">Features</a>
+              <a href="#pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
+              <a href="#demo" className="text-gray-600 hover:text-blue-600">Demo</a>
+              <a href="#blog" className="text-gray-600 hover:text-blue-600">Blog</a>
+              <button id="openModalBtn" className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Join Waitlist</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+
+    // Hero Component
+    const Hero = () => (
+      <section className="pt-24 pb-12 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6">
+            Tabwise: Organize Your Browser Tabs Effortlessly
+          </h1>
+          <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Boost productivity with Tabwise’s Chrome extension for browser tab management. Smart categorization, session saving, and cloud sync keep you focused. <a href="/tabwise/blog.html" className="text-blue-500 hover:text-blue-600">Explore our blog</a> for productivity tips.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <a href="#demo" className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 text-lg">
+              Watch Demo
+            </a>
+            <a href="#pricing" className="border border-blue-900 text-blue-900 px-6 py-3 rounded-md hover:bg-blue-50 text-lg">
+              View Plans
+            </a>
+          </div>
+        </div>
+      </section>
+    );
+
+    // Features Component
+    const Features = () => (
+      <section id="features" className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Why Choose Tabwise for Browser Tab Management?</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { title: "Smart Tab Organization", desc: "Automatically group browser tabs by project or topic for efficient management. Read our <a href='/tabwise/blog/tabwise-productivity-benefits.html' className='text-blue-500 hover:text-blue-600'>productivity guide</a>." },
+              { title: "Seamless Drag & Drop", desc: "Rearrange tabs effortlessly to match your workflow. See our <a href='/tabwise/terms.html' className='text-blue-500 hover:text-blue-600'>Terms of Service</a> for details." },
+              { title: "Stay Productive", desc: "Save browser sessions and resume work seamlessly with cloud sync." },
+            ].map((feature, index) => (
+              <div key={index} className="bg-white p-6 rounded-lg shadow-sm text-center">
+                <div className="h-12 w-12 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                  <svg className="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-medium text-blue-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600" dangerouslySetInnerHTML={{ __html: feature.desc }}></p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+
+    // Pricing Component
+    const Pricing = () => {
+      const [isYearly, setIsYearly] = useState(false);
+
+      return (
+        <section id="pricing" className="py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Simple Pricing for Browser Tab Management</h2>
+            <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+              Choose the perfect Tabwise plan for your productivity needs. Toggle between monthly and yearly pricing for the Pro plan.
+            </p>
+            <div className="flex justify-center mb-8">
+              <button
+                onClick={() => setIsYearly(false)}
+                className={`px-4 py-2 rounded-l-md ${!isYearly ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setIsYearly(true)}
+                className={`px-4 py-2 rounded-r-md ${isYearly ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+              >
+                Yearly
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  plan: "Free",
+                  price: "$0/mo",
+                  desc: "Perfect for casual users starting with browser tab organization. <a href='/tabwise/contact.html' className='text-blue-500 hover:text-blue-600'>Contact us</a> for support.",
+                  features: [
+                    "Save up to 10 tabs per category",
+                    "Manual session save/restore",
+                    "Light/Dark theme support",
+                  ],
+                  cta: "Get Started",
+                },
+                {
+                  plan: "Pro",
+                  price: isYearly ? "$20/yr" : "$2/mo",
+                  desc: "Ideal for daily users needing advanced productivity tools and cloud sync.",
+                  features: [
+                    "Unlimited categories and tab saves",
+                    "AI-powered auto-categorization",
+                    "Bulk tab operations",
+                    "Export & import tab library",
+                    "Cloud sync across devices",
+                  ],
+                  cta: "Go Pro",
+                },
+                {
+                  plan: "Lifetime",
+                  price: "$25 one-time",
+                  desc: "Best for power users. Get all Pro features forever. See <a href='/tabwise/best-tab-extensions-chrome-2025.html' className='text-blue-500 hover:text-blue-600'>top Chrome extensions</a>.",
+                  features: [
+                    "All Pro features for life",
+                    "No recurring fees",
+                    "Lifetime updates and upgrades",
+                  ],
+                  cta: "Get Lifetime",
+                },
+              ].map((plan, index) => (
+                <div key={index} className="bg-gray-50 p-6 rounded-lg shadow-sm text-center">
+                  <h3 className="text-2xl font-medium text-blue-900 mb-2">{plan.plan}</h3>
+                  <p className="text-4xl font-bold text-blue-900 mb-4">{plan.price}</p>
+                  <p className="text-gray-600 mb-6" dangerouslySetInnerHTML={{ __html: plan.desc }}></p>
+                  <ul className="text-gray-600 mb-8 space-y-2">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-center justify-center">
+                        <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href="#"
+                    className={`inline-block px-6 py-3 rounded-md text-lg ${
+                      plan.plan === "Pro"
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "border border-blue-900 text-blue-900 hover:bg-blue-50"
+                    }`}
+                  >
+                    {plan.cta}
+                  </a>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      );
+
+    // Demo Component with Video
+    const Demo = () => (
+      <section id="demo" className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">See Tabwise in Action</h2>
+          <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+            Watch how Tabwise simplifies browser tab management with smart categorization and cloud sync. Learn more in our <a href="/tabwise/browser-tab-management-guide.html" className="text-blue-500 hover:text-blue-600">tab management guide</a>.
+          </p>
+          <div className="max-w-4xl mx-auto">
+            <video controls className="w-full rounded-lg shadow-sm" poster="/tabwise/demo-poster.png">
+              <source src="/tabwise/demo-video.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </div>
+      </section>
+    );
+
+    // Blog Component
+    const Blog = () => (
+      <section id="blog" className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">Tabwise Blog: Productivity & Tab Management</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {[
+              {
+                title: "10 Ways Tabwise Boosts Your Productivity",
+                desc: "Discover how Tabwise’s Chrome extension enhances your workflow with smart browser tab management.",
+                link: "/tabwise/tabwise-productivity-benefits.html",
+                image: "/tabwise/tabwise-productivity-benefits.png",
+              },
+              {
+                title: "Tabwise vs OneTab: Which Is Better?",
+                desc: "Compare Tabwise and OneTab for efficient browser tab organization and productivity.",
+                link: "/tabwise/tabwise-vs-onetab-comparison.html",
+                image: "/tabwise/tabwise-vs-onetab-comparison.png",
+              },
+              {
+                title: "Ultimate Guide to Managing Browser Tabs",
+                desc: "Master browser tab management with expert strategies using Tabwise’s Chrome extension.",
+                link: "/tabwise/browser-tab-management-guide.html",
+                image: "/tabwise/browser-tab-management-guide.png",
+              },
+              {
+                title: "Top Chrome Extensions for 2025",
+                desc: "Explore the best productivity tools, including Tabwise, for browser tab management.",
+                link: "/tabwise/best-tab-extensions-chrome-2025.html",
+                image: "/tabwise/best-tab-extensions-chrome-2025.png",
+ Segurança
+
+              },
+            ].map((post, index) => (
+              <div key={index} className="bg-gray-50 p-6 rounded-lg shadow-sm">
+                <img src={post.image} alt={`${post.title} blog image`} className="w-full h-48 object-cover rounded-t-lg mb-4"/>
+                <h3 className="text-xl font-medium text-blue-900 mb-2">{post.title}</h3>
+                <p className="text-gray-600 mb-4">{post.desc}</p>
+                <a href={post.link} className="text-blue-500 hover:text-blue-600">Read More</a>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-8">
+            <a href="/tabwise/blog.html" className="text-blue-500 hover:text-blue-600 font-medium">View All Blog Posts</a>
+          </div>
+        </div>
+      </section>
+    );
+
+    // Footer Component
+    const Footer = () => (
+      <footer className="bg-blue-900 text-white py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-4 md:mb-0">
+              <img src="/tabwise/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+              <span className="ml-2 text-lg font-medium">Tabwise</span>
+            </div>
+            <div className="flex space-x-4">
+              <a href="/tabwise/privacy.html" className="hover:text-blue-300" rel="noopener noreferrer">Privacy</a>
+              <a href="/tabwise/terms.html" className="hover:text-blue-300" rel="noopener noreferrer">Terms</a>
+              <a href="/tabwise/contact.html" className="hover:text-blue-300" rel="noopener noreferrer">Contact</a>
+            </div>
+          </div>
+          <p className="text-center mt-4 text-gray-400">© 2025 Tabwise. All rights reserved.</p>
+        </div>
+      </footer>
+    );
+
+    // Main App Component
+    const App = () => {
+      const [theme, setTheme] = useState('light');
+
+      useEffect(() => {
+        const modal = document.getElementById('emailModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.querySelector('.close-btn');
+        const submitBtn = document.getElementById('submitEmail');
+
+        const openModal = () => {
+          modal.style.display = 'block';
+          modal.querySelector('.modal-content').classList.toggle('dark', theme === 'dark');
+        };
+
+        const closeModal = () => {
+          modal.style.display = 'none';
+        };
+
+        openBtn.addEventListener('click', openModal);
+        closeBtn.addEventListener('click', closeModal);
+        submitBtn.addEventListener('click', () => {
+          const email = document.getElementById('emailInput').value;
+          if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert('Thank you for joining the waitlist!');
+            closeModal();
+          } else {
+            alert('Please enter a valid email address.');
+          }
+        });
+
+        // Open modal on page load
+        setTimeout(openModal, 1000);
+
+        return () => {
+          openBtn.removeEventListener('click', openModal);
+          closeBtn.removeEventListener('click', closeModal);
+        };
+      }, [theme]);
+
+      return (
+        <ErrorBoundary>
+          <div className={theme === 'dark' ? 'bg-gray-800 text-gray-200' : 'bg-gray-50 text-gray-700'}>
+            <Navbar />
+            <Hero />
+            <Features />
+            <Pricing />
+            <Demo />
+            <Blog />
+            <Footer />
+          </div>
+        </ErrorBoundary>
+      );
+    };
+
+    // Render the App
+    try {
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    } catch (e) {
+      console.error("Error rendering React app:", e);
+      document.getElementById("root").innerHTML = '<div class="error-boundary">Failed to load the application. Please try again later.</div>';
+    }
+</script>
+</body>
+</html><script type="text/javascript">
         var gk_isXlsx = false;
         var gk_xlsxFileLookup = {};
         var gk_fileData = {};
@@ -293,24 +728,6 @@
           </div>
         </section>
       );
-
-    // Demo Component with Video
-    const Demo = () => (
-      <section id="demo" className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-blue-900 text-center mb-12">See Tabwise in Action</h2>
-          <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
-            Watch how Tabwise simplifies browser tab management with smart categorization and cloud sync. Learn more in our <a href="/tabwise/browser-tab-management-guide.html" className="text-blue-500 hover:text-blue-600">tab management guide</a>.
-          </p>
-          <div className="max-w-4xl mx-auto">
-            <video controls className="w-full rounded-lg shadow-sm" poster="/tabwise/demo-poster.png">
-              <source src="/tabwise/demo-video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        </div>
-      </section>
-    );
 
     // Interactive Demo Component
     const Demo = () => {
