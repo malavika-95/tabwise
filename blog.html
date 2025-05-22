@@ -3,47 +3,55 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tabwise Blog - Productivity & Tab Management Tips</title>
-<meta name="description" content="Explore the Tabwise blog for tips on browser tab management, productivity, and Chrome extensions."/>
-<meta name="keywords" content="Tabwise blog, browser tab management tips, productivity tips, Chrome extensions"/>
+<title>Tabwise Blog - Tips for Browser Management & Productivity</title>
+<meta name="description" content="Explore the Tabwise blog for tips on browser management, tab organization, and productivity. Learn how to make the most of your browsing experience."/>
+<meta name="keywords" content="Tabwise blog, browser management tips, tab organization, productivity, Chrome extension, tab management guide"/>
 <meta name="author" content="Tabwise Team"/>
 <meta name="robots" content="index, follow"/>
 <link rel="canonical" href="https://www.tabwise.app/tabwise/blog.html"/>
-<meta property="og:title" content="Tabwise Blog - Productivity & Tab Management Tips"/>
-<meta property="og:description" content="Explore the Tabwise blog for tips on browser tab management and productivity."/>
+<meta property="og:title" content="Tabwise Blog - Browser Management & Productivity Tips"/>
+<meta property="og:description" content="Discover tips and strategies for browser management and productivity on the Tabwise blog."/>
 <meta property="og:image" content="https://www.tabwise.app/tabwise/logo.png"/>
 <meta property="og:url" content="https://www.tabwise.app/tabwise/blog.html"/>
 <meta property="og:type" content="website"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Tabwise Blog - Productivity & Tab Management Tips"/>
-<meta name="twitter:description" content="Explore the Tabwise blog for tips on browser tab management and productivity."/>
+<meta name="twitter:title" content="Tabwise Blog - Browser Management & Productivity Tips"/>
+<meta name="twitter:description" content="Read the Tabwise blog for insights on browser management and productivity."/>
 <meta name="twitter:image" content="https://www.tabwise.app/tabwise/logo.png"/>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Blog",
-  "name": "Tabwise Blog",
-  "url": "https://www.tabwise.app/tabwise/blog.html",
-  "description": "The Tabwise blog offers tips on browser tab management, productivity, and Chrome extensions.",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Tabwise",
-    "logo": "https://www.tabwise.app/tabwise/logo.png"
-  }
-}
-</script>
 <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.9/babel.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
     body { font-family: 'Inter', 'Nunito', sans-serif; }
+    .error-boundary { color: red; text-align: center; padding: 16px; }
+    .waitlist-input { transition: all 0.3s ease; }
+    .waitlist-input:focus { border-color: #3B82F6; }
+    .modal-overlay { background: rgba(0, 0, 0, 0.5); }
 </style>
 </head>
-<body className="bg-gray-50 text-gray-700">
+<body class="bg-gray-50 text-gray-700">
 <div id="root"></div>
 <script type="text/babel">
     const { useState } = React;
+
+    // Error Boundary Component
+    class ErrorBoundary extends React.Component {
+      state = { hasError: false, error: null };
+      static getDerivedStateFromError(error) {
+        console.error("ErrorBoundary caught:", error);
+        return { hasError: true, error };
+      }
+      componentDidCatch(error, errorInfo) {
+        console.error("ErrorBoundary info:", errorInfo);
+      }
+      render() {
+        if (this.state.hasError) {
+          return <div className="error-boundary">Something went wrong: {this.state.error?.message || 'Unknown error'}</div>;
+        }
+        return this.props.children;
+      }
+    }
 
     // Waitlist Modal Component
     const WaitlistModal = ({ isOpen, onClose }) => {
@@ -56,13 +64,19 @@
           setTimeout(() => setMessage(""), 3000);
           return;
         }
-        console.log("Waitlist email submitted:", email);
-        setMessage("Thank you for joining the waitlist!");
-        setEmail("");
-        setTimeout(() => {
-          setMessage("");
-          onClose();
-        }, 2000);
+        try {
+          console.log("Waitlist email submitted:", email);
+          setMessage("Thank you for joining the waitlist!");
+          setEmail("");
+          setTimeout(() => {
+            setMessage("");
+            onClose();
+          }, 2000);
+        } catch (error) {
+          console.error("Waitlist submission error:", error);
+          setMessage("Failed to join waitlist. Please try again.");
+          setTimeout(() => setMessage(""), 3000);
+        }
       };
 
       if (!isOpen) return null;
@@ -105,6 +119,7 @@
     // Navigation Component
     const Navbar = () => {
       const [isModalOpen, setIsModalOpen] = useState(false);
+      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
       return (
         <nav className="bg-white shadow-sm fixed w-full z-10">
@@ -112,11 +127,12 @@
             <div className="flex justify-between h-16">
               <div className="flex">
                 <a href="/tabwise/" className="flex-shrink-0 flex items-center">
-                  <img src="/tabwise/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+                  <img src="/tabwise/logo.png" alt="Tabwise Logo for Browser Management" className="h-8 w-8"/>
                   <span className="ml-2 text-xl font-bold text-blue-900">Tabwise</span>
                 </a>
               </div>
-              <div className="flex items-center space-x-4">
+              {/* Desktop Menu */}
+              <div className="hidden md:flex items-center space-x-4">
                 <a href="/tabwise/#features" className="text-gray-600 hover:text-blue-600" aria-label="Features">Features</a>
                 <a href="/tabwise/#pricing" className="text-gray-600 hover:text-blue-600" aria-label="Pricing">Pricing</a>
                 <a href="/tabwise/#experience" className="text-gray-600 hover:text-blue-600" aria-label="Demo">Demo</a>
@@ -128,7 +144,44 @@
                   Join Waitlist
                 </button>
               </div>
+              {/* Mobile Menu Button */}
+              <div className="md:hidden flex items-center">
+                <button
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="text-gray-600 hover:text-blue-600 focus:outline-none"
+                  aria-label="Toggle mobile menu"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d={isMobileMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"}
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
+            {/* Mobile Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden">
+                <div className="flex flex-col space-y-2 px-4 py-2">
+                  <a href="/tabwise/#features" className="text-gray-600 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
+                  <a href="/tabwise/#pricing" className="text-gray-600 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
+                  <a href="/tabwise/#experience" className="text-gray-600 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Demo</a>
+                  <a href="/tabwise/blog.html" className="text-gray-600 hover:text-blue-600" onClick={() => setIsMobileMenuOpen(false)}>Blog</a>
+                  <button
+                    onClick={() => {
+                      setIsModalOpen(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600 w-full text-left"
+                  >
+                    Join Waitlist
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           <WaitlistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </nav>
@@ -136,51 +189,87 @@
     };
 
     // Blog Component
-    const Blog = () => (
-      <section className="pt-20 pb-12 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 text-center mb-8">Tabwise Blog</h1>
-          <p className="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">
-            Discover tips and insights on browser tab management, productivity, and Chrome extensions.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              {
-                title: "10 Ways Tabwise Boosts Your Productivity",
-                desc: "Learn how Tabwise enhances your workflow with smart tab management features.",
-                link: "/tabwise/tabwise-productivity-benefits.html",
-                image: "/tabwise/tabwise-productivity-benefits.png",
-              },
-              {
-                title: "Tabwise vs OneTab: Which Is Better?",
-                desc: "Compare Tabwise and OneTab for efficient browser tab organization.",
-                link: "/tabwise/tabwise-vs-onetab-comparison.html",
-                image: "/tabwise/tabwise-vs-onetab-comparison.png",
-              },
-              {
-                title: "Ultimate Guide to Managing Browser Tabs",
-                desc: "Master tab management with our expert strategies and tips.",
-                link: "/tabwise/browser-tab-management-guide.html",
-                image: "/tabwise/browser-tab-management-guide.png",
-              },
-              {
-                title: "Top Chrome Extensions for 2025",
-                desc: "Discover the best tools for organizing browser tabs, including Tabwise.",
-                link: "/tabwise/best-tab-extensions-chrome-2025.html",
-                image: "/tabwise/best-tab-extensions-chrome-2025.png",
-              },
-            ].map((post, index) => (
-              <article key={index} className="bg-gray-50 p-5 rounded-lg shadow-sm">
-                <img src={post.image} alt={`${post.title} blog image`} className="w-full h-48 object-cover rounded-t-lg mb-4"/>
-                <h2 className="text-xl font-medium text-blue-900 mb-2">{post.title}</h2>
-                <p className="text-gray-600 mb-4">{post.desc}</p>
-                <a href={post.link} className="text-blue-500 hover:text-blue-600">Read More</a>
-              </article>
-            ))}
+    const Blog = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
+
+      return (
+        <section className="pt-20 pb-12 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-blue-900 text-center mb-8">Tabwise Blog</h1>
+            <p className="text-lg text-gray-600 mb-10 text-center max-w-2xl mx-auto">
+              Discover tips, strategies, and updates on browser management and productivity. Join the waitlist to stay ahead with Tabwise!
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                {
+                  title: "10 Ways Tabwise Boosts Your Productivity",
+                  desc: "Learn how Tabwise enhances your workflow with smart tab management features.",
+                  link: "/tabwise/tabwise-productivity-benefits.html",
+                  image: "/tabwise/tabwise-productivity-benefits.png",
+                  date: "May 15, 2025",
+                },
+                {
+                  title: "Tabwise vs OneTab: Which Is Better?",
+                  desc: "Compare Tabwise and OneTab for efficient browser tab organization.",
+                  link: "/tabwise/tabwise-vs-onetab-comparison.html",
+                  image: "/tabwise/tabwise-vs-onetab-comparison.png",
+                  date: "May 10, 2025",
+                },
+                {
+                  title: "Ultimate Guide to Managing Browser Tabs",
+                  desc: "Master tab management with our expert strategies and tips.",
+                  link: "/tabwise/browser-tab-management-guide.html",
+                  image: "/tabwise/browser-tab-management-guide.png",
+                  date: "May 5, 2025",
+                },
+                {
+                  title: "Top Chrome Extensions for 2025",
+                  desc: "Discover the best tools for organizing browser tabs, including Tabwise.",
+                  link: "/tabwise/best-tab-extensions-chrome-2025.html",
+                  image: "/tabwise/best-tab-extensions-chrome-2025.png",
+                  date: "April 30, 2025",
+                },
+                {
+                  title: "How to Organize Tabs for Research Projects",
+                  desc: "A step-by-step guide to using Tabwise for research and study.",
+                  link: "/tabwise/organize-tabs-research-projects.html",
+                  image: "/tabwise/organize-tabs-research-projects.png",
+                  date: "April 25, 2025",
+                },
+                {
+                  title: "Why Tab Management Matters in 2025",
+                  desc: "Explore the importance of tab management for modern workflows.",
+                  link: "/tabwise/why-tab-management-matters-2025.html",
+                  image: "/tabwise/why-tab-management-matters-2025.png",
+                  date: "April 20, 2025",
+                },
+              ].map((post, index) => (
+                <article key={index} className="bg-white p-5 rounded-lg shadow-sm">
+                  <img
+                    src={post.image}
+                    alt={`${post.title} - Tabwise blog on browser management`}
+                    className="w-full h-48 object-cover rounded-t-lg mb-4"
+                  />
+                  <p className="text-sm text-gray-500 mb-2">{post.date}</p>
+                  <h2 className="text-xl font-medium text-blue-900 mb-2">{post.title}</h2>
+                  <p className="text-gray-600 mb-4">{post.desc}</p>
+                  <a href={post.link} className="text-blue-500 hover:text-blue-600 font-medium">Read More</a>
+                </article>
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-blue-500 text-white px-6 py-3 rounded-md text-lg hover:bg-blue-600"
+              >
+                Join the Waitlist
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
-    );
+          <WaitlistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        </section>
+      );
+    };
 
     // Footer Component
     const Footer = () => (
@@ -188,14 +277,13 @@
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center mb-4 md:mb-0">
-              <img src="/tabwise/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+              <img src="/tabwise/logo.png" alt="Tabwise Logo for Browser Organization" className="h-8 w-8"/>
               <span className="ml-2 text-lg font-medium">Tabwise</span>
             </div>
             <div className="flex space-x-4">
-              <a href="/tabwise/privacy.html" className="hover:text-blue-300" aria-label="Privacy Policy">Privacy</a>
-              <a href="/tabwise/terms.html" className="hover:text-blue-300" aria-label="Terms of Service">Terms</a>
-              <a href="/tabwise/contact.html" className="hover:text-blue-300" aria-label="Contact Us">Contact</a>
-              <a href="/tabwise/sitemap.html" className="hover:text-blue-300" aria-label="Sitemap">Sitemap</a>
+              <a href="/tabwise/privacy.html" className="hover:text-blue-300" rel="noopener noreferrer" aria-label="Privacy Policy">Privacy</a>
+              <a href="/tabwise/terms.html" className="hover:text-blue-300" rel="noopener noreferrer" aria-label="Terms of Service">Terms</a>
+              <a href="/tabwise/contact.html" className="hover:text-blue-300" rel="noopener noreferrer" aria-label="Contact Us">Contact</a>
             </div>
           </div>
           <p className="text-center mt-4 text-gray-400 text-sm">© 2025 Tabwise. All rights reserved.</p>
@@ -205,16 +293,22 @@
 
     // Main App Component
     const App = () => (
-      <div>
-        <Navbar />
-        <Blog />
-        <Footer />
-      </div>
+      <ErrorBoundary>
+        <div>
+          <Navbar />
+          <Blog />
+          <Footer />
+        </div>
+      </ErrorBoundary>
     );
 
     // Render the App
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(<App />);
+    try {
+      const root = ReactDOM.createRoot(document.getElementById("root"));
+      root.render(<App />);
+    } catch (err) {
+      console.error("Error rendering app:", err);
+    }
 </script>
 </body>
 </html>
