@@ -67,6 +67,30 @@
     .waitlist-input { transition: all 0.3s ease; }
     .waitlist-input:focus { border-color: #3B82F6; }
     .modal-overlay { background: rgba(0, 0, 0, 0.5); }
+    /* Tooltip styles */
+    .tooltip-wrapper { position: relative; }
+    .tooltip {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+      position: absolute;
+      z-index: 20;
+      background-color: #2B4ACB; /* bg-blue-800 */
+      color: white;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 14px;
+      white-space: normal;
+      max-width: 200px;
+    }
+    .tooltip-wrapper:hover .tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    .tooltip-top { bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 6px; }
+    .tooltip-bottom { top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; }
+    .tooltip-left { right: 100%; top: 50%; transform: translateY(-50%); margin-right: 4px; }
 </style>
 </head>
 <body class="bg-gray-50 text-gray-700">
@@ -172,7 +196,7 @@
               <div className="flex items-center space-x-4">
                 <a href="#features" className="text-gray-600 hover:text-blue-600">Features</a>
                 <a href="#pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
-                <a href="#demo" className="text-gray-600 hover:text-blue-600">Demo</a>
+                <a href="#experience" className="text-gray-600 hover:text-blue-600">Demo</a>
                 <a href="#blog" className="text-gray-600 hover:text-blue-600">Blog</a>
                 <button
                   onClick={() => setIsModalOpen(true)}
@@ -199,7 +223,7 @@
             Save and categorize browser tabs with Tabwise’s upcoming Chrome extension. Boost productivity with seamless tab management. <a href="/tabwise/blog.html" className="text-blue-500 hover:text-blue-600">Explore our blog</a> for tips.
           </p>
           <div className="flex justify-center space-x-4">
-            <a href="#demo" className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 text-lg">
+            <a href="#experience" className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 text-lg">
               See It in Action
             </a>
             <a href="#pricing" className="border border-blue-900 text-blue-900 px-6 py-3 rounded-md hover:bg-blue-50 text-lg">
@@ -236,140 +260,9 @@
       </section>
     );
 
-    // Pricing Component
-    const Pricing = () => {
-      const [isYearly, setIsYearly] = useState(false);
-
-      return (
-        <section id="pricing" className="py-12 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-blue-900 text-center mb-8">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">
-              Choose a plan that fits your needs. Toggle to see monthly or yearly pricing for our best-selling Pro plan.
-            </p>
-            <div className="flex justify-center mb-6">
-              <div className="inline-flex rounded-md shadow-sm">
-                <button
-                  onClick={() => setIsYearly(false)}
-                  className={`px-4 py-2 text-sm font-medium rounded-l-md ${
-                    !isYearly ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setIsYearly(true)}
-                  className={`px-4 py-2 text-sm font-medium rounded-r-md ${
-                    isYearly ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  Yearly
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  plan: "Free",
-                  price: "$0/mo",
-                  desc: "Perfect for casual users who want basic tab organization. <a href='/tabwise/contact.html' className='text-blue-500 hover:text-blue-600'>Contact us</a> for support.",
-                  features: [
-                    "Save up to 10 tabs per category",
-                    "Manual session save/restore",
-                    "Light/Dark theme support",
-                  ],
-                  cta: "Get Started",
-                  isBestSeller: false,
-                },
-                {
-                  plan: "Pro",
-                  price: isYearly ? "$20/yr" : "$2/mo",
-                  desc: "Ideal for daily users who want enhanced productivity features.",
-                  features: [
-                    "Unlimited categories and tab saves",
-                    "AI-powered auto-categorization",
-                    "Bulk tab operations",
-                    "Export & import tab library",
-                    "Cloud sync across devices",
-                  ],
-                  cta: "Go Pro",
-                  isBestSeller: true,
-                },
-                {
-                  plan: "Lifetime",
-                  price: "$25 one-time",
-                  desc: "Best for power users. Get all Pro features forever. See <a href='/tabwise/blog/best-tab-extensions-chrome-2025.html' className='text-blue-500 hover:text-blue-600'>top Chrome extensions</a>.",
-                  features: [
-                    "All Pro features for life",
-                    "No recurring fees",
-                    "Lifetime updates and upgrades",
-                  ],
-                  cta: "Get Lifetime",
-                  isBestSeller: false,
-                },
-              ].map((plan, index) => (
-                <div key={index} className="relative bg-gray-50 p-5 rounded-lg shadow-sm text-center">
-                  {plan.isBestSeller && (
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400 text-gray-900 text-sm font-medium px-3 py-1 rounded-full">
-                      Best Seller
-                    </div>
-                  )}
-                  <h3 className="text-2xl font-medium text-blue-900 mb-2">{plan.plan}</h3>
-                  <p className="text-4xl font-bold text-blue-900 mb-4">{plan.price}</p>
-                  <p className="text-gray-600 mb-6" dangerouslySetInnerHTML={{ __html: plan.desc }}></p>
-                  <ul className="text-gray-600 mb-6 space-y-2">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center justify-center">
-                        <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                  <a
-                    href="#"
-                    className={`inline-block px-6 py-3 rounded-md text-lg ${
-                      plan.isBestSeller
-                        ? "bg-blue-500 text-white hover:bg-blue-600"
-                        : "border border-blue-900 text-blue-900 hover:bg-blue-50"
-                    }`}
-                  >
-                    {plan.cta}
-                  </a>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      );
-    };
-
-    // Demo Video Component
-    const DemoVideo = () => (
-      <section id="demo-video" className="py-12 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-blue-900 text-center mb-8">Watch Tabwise in Action</h2>
-          <p className="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">
-            See how Tabwise simplifies browser tab management with this quick demo video. Learn more in our <a href="/tabwise/blog/browser-tab-management-guide.html" className="text-blue-500 hover:text-blue-600">tab management guide</a>.
-          </p>
-          <div className="flex justify-center">
-            <video
-              className="rounded-lg shadow-sm"
-              width="800"
-              controls
-              poster="/tabwise/demo-video-poster.png"
-            >
-              <source src="/tabwise/demo-video.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        </div>
-      </section>
-    );
-
-    // Interactive Demo Component
-    const Demo = () => {
+    // Combined Experience Section (Interactive Demo + Demo Video with Toggle)
+    const Experience = () => {
+      const [activeView, setActiveView] = useState("interactive"); // Default to interactive demo
       const [categories, setCategories] = useState([
         { name: "Work", tabs: [{ title: "Project Plan", url: "https://example.com", note: "" }] },
         { name: "Personal", tabs: [{ title: "Shopping List", url: "https://example.com", note: "Buy groceries" }] },
@@ -670,554 +563,713 @@
       }, [searchQuery, categories, sortPreference]);
 
       return (
-        <section id="demo" className="py-12 bg-gray-50">
+        <section id="experience" className="py-12 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl font-bold text-blue-900 text-center mb-8">Try Tabwise Interactively</h2>
+            <h2 className="text-3xl font-bold text-blue-900 text-center mb-8">Experience Tabwise</h2>
             <p className="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">
-              Experience Tabwise’s browser tab management features with this interactive demo. Learn more in our <a href="/tabwise/blog/browser-tab-management-guide.html" className="text-blue-500 hover:text-blue-600">tab management guide</a>.
+              See Tabwise in action with a quick demo video, or try its browser tab management features interactively. Learn more in our <a href="/tabwise/blog/browser-tab-management-guide.html" className="text-blue-500 hover:text-blue-600">tab management guide</a>.
             </p>
-            {/* Demo Map */}
-            <div className="mb-8 max-w-3xl mx-auto">
-              <h3 className="text-xl font-medium text-blue-900 mb-4 text-center">Interactive Demo Guide</h3>
-              <div className="relative bg-white p-4 rounded-lg shadow-sm">
-                <img src="/tabwise/demo-screenshot.png" alt="Tabwise Interactive Demo Screenshot" className="w-full h-auto rounded-md"/>
-                <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">1. Search Bar: Find tabs by title, URL, or notes</div>
-                <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">2. Settings & Theme: Sort or toggle light/dark mode</div>
-                <div className="absolute top-12 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">3. Tabs: Switch between Create/Manage views</div>
-                <div className="absolute top-1/3 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">4. Category Management: Add, edit, or delete items</div>
-                <div className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">5. Undo: Revert recent actions</div>
-              </div>
-              <p className="text-sm text-gray-600 mt-2 text-center">Note: Use the demo to create categories, add tabs, and explore features. Some actions (e.g., export) are disabled.</p>
-            </div>
-            {/* Interactive Demo */}
-            <div
-              className={`p-4 rounded-lg shadow-sm max-w-md mx-auto ${
-                theme === "dark" ? "bg-gray-800 text-gray-200" : "bg-white text-gray-700"
-              }`}
-              style={{ width: "320px", maxHeight: "600px", overflowY: "auto" }}
-            >
-              {/* Header */}
-              <header className="flex justify-end items-center mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="relative w-36">
-                    <input
-                      id="search"
-                      type="text"
-                      placeholder="Search tabs..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className={`w-full p-1 text-sm border rounded-md ${
-                        theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
-                      }`}
-                    />
-                    <svg
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4"
-                      fill={theme === "dark" ? "#bbb" : "#666"}
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </div>
-                  <button onClick={() => setShowSettings(!showSettings)} className="p-1">
-                    <svg className="w-4 h-4" fill={theme === "dark" ? "#66b0ff" : "#3B82F6"} viewBox="0 0 24 24">
-                      <path d="M4 12a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z" />
-                    </svg>
-                  </button>
-                  <button onClick={toggleTheme} className="p-1">
-                    <svg
-                      id="themeIcon"
-                      className="w-4 h-4"
-                      fill={theme === "dark" ? "#66b0ff" : "#3B82F6"}
-                      viewBox="0 0 24 24"
-                    >
-                      {theme === "light" ? (
-                        <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                      ) : (
-                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                      )}
-                    </svg>
-                  </button>
-                </div>
-              </header>
-
-              {/* Settings Dropdown */}
-              {showSettings && (
-                <div
-                  className={`absolute right-4 mt-2 w-48 rounded-md shadow-lg ${
-                    theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300"
-                  } border z-10`}
+            {/* Toggle Buttons */}
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex rounded-md shadow-sm">
+                <button
+                  onClick={() => setActiveView("interactive")}
+                  className={`px-4 py-2 text-sm font-medium rounded-l-md ${
+                    activeView === "interactive"
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-800"
+                  }`}
                 >
-                  <div className="p-2">
-                    <div className="text-sm font-medium mb-1">Sort Categories</div>
-                    <select
-                      id="sortCategories"
-                      value={sortPreference}
-                      onChange={(e) => setSortPreference(e.target.value)}
-                      className={`w-full p-1 text-sm rounded-md ${
-                        theme === "dark" ? "bg-gray-600 text-gray-200" : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      <option value="name-asc">Name (A-Z)</option>
-                      <option value="name-desc">Name (Z-A)</option>
-                      <option value="tabs-asc">Tabs (Low to High)</option>
-                      <option value="tabs-desc">Tabs (High to Low)</option>
-                    </select>
-                    <hr className={`my-2 ${theme === "dark" ? "border-gray-600" : "border-gray-300"}`} />
-                    <button
-                      className={`w-full p-1 text-sm rounded-md text-left ${
-                        theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
-                      }`}
-                      onClick={() => alert("Auto-categorization not available in demo")}
-                    >
-                      Auto-Categorize Tabs
-                    </button>
-                    <button
-                      className={`w-full p-1 text-sm rounded-md text-left ${
-                        theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
-                      }`}
-                      onClick={() => alert("Export not available in demo")}
-                    >
-                      Export Categories
-                    </button>
-                    <button
-                      className={`w-full p-1 text-sm rounded-md text-left ${
-                        theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
-                      }`}
-                      onClick={() => alert("Import not available in demo")}
-                    >
-                      Import Categories
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Tabs */}
-              <nav className="flex mb-2">
-                {["create", "manage"].map((tab) => (
-                  <button
-                    key={tab}
-                    data-tab={tab}
-                    className={`flex-1 p-2 text-sm rounded-md ${
-                      activeTab === tab
-                        ? theme === "dark"
-                          ? "bg-blue-400 text-white"
-                          : "bg-blue-500 text-white"
-                        : theme === "dark"
-                        ? "bg-gray-600 text-gray-200"
-                        : "bg-gray-200 text-gray-700"
-                    }`}
-                    onClick={() => setActiveTab(tab)}
-                  >
-                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                  </button>
-                ))}
-              </nav>
-
-              {/* Create Tab */}
-              <div
-                id="create"
-                className="tab-content"
-                style={{ display: activeTab === "create" ? "block" : "none" }}
-              >
-                <div className="flex flex-col gap-2">
-                  <input
-                    id="newCategory"
-                    type="text"
-                    placeholder="New category name"
-                    className={`p-2 text-sm border rounded-md ${
-                      theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
-                    }`}
-                  />
-                  <button
-                    id="addCategoryBtn"
-                    onClick={addCategory}
-                    className={`p-2 text-sm rounded-md ${
-                      theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
-                    } text-white`}
-                  >
-                    Add Category
-                  </button>
-                  <select
-                    id="addToCategory"
-                    className={`p-2 text-sm border rounded-md ${
-                      theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
-                    }`}
-                  >
-                    <option value="">Select category to add tabs</option>
-                    {categories.map((cat, index) => (
-                      <option key={index} value={index}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    id="addToCategoryBtn"
-                    onClick={() => {
-                      const dropdown = document.getElementById("addToCategory");
-                      const catIndex = parseInt(dropdown.value);
-                      if (isNaN(catIndex)) {
-                        showError("Please select a category");
-                        return;
-                      }
-                      addTabsToCategory(catIndex);
-                    }}
-                    className={`p-2 text-sm rounded-md ${
-                      theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
-                    } text-white`}
-                  >
-                    Add Tabs to Category
-                  </button>
-                </div>
+                  Try It Interactively
+                </button>
+                <button
+                  onClick={() => setActiveView("video")}
+                  className={`px-4 py-2 text-sm font-medium rounded-r-md ${
+                    activeView === "video"
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 hover:text-gray-800"
+                  }`}
+                >
+                  Watch It in Action
+                </button>
               </div>
+            </div>
+            {/* Content Area */}
+            <div className="flex justify-center">
+              {activeView === "interactive" ? (
+                <div className={theme === "dark" ? "bg-gray-800 text-gray-200" : "bg-white text-gray-700"}>
+                  <div className="p-4 rounded-lg shadow-sm mx-auto">
+                    <div style={{ width: "360px", maxHeight: "800px", overflowY: "auto" }}>
+                      {/* Header */}
+                      <header className="flex justify-end items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="tooltip-wrapper relative w-40">
+                            <input
+                              id="search"
+                              type="text"
+                              placeholder="Search tabs..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              className={`w-full p-1 text-sm border rounded-md ${
+                                theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                              }`}
+                            />
+                            <div className="tooltip tooltip-top">Search Bar: Find tabs by title or URL</div>
+                            <svg
+                              className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4"
+                              fill={theme === "dark" ? "#bbb" : "#666"}
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                          </div>
+                          <div className="tooltip-wrapper">
+                            <button onClick={() => setShowSettings(!showSettings)} className="p-1">
+                              <svg className="w-4 h-4" fill={theme === "dark" ? "#66b0ff" : "#3B82F6"} viewBox="0 0 24 24">
+                                <path d="M4 12a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z" />
+                              </svg>
+                            </button>
+                            <div className="tooltip tooltip-top">Settings: Sort categories or manage tabs</div>
+                          </div>
+                          <div className="tooltip-wrapper">
+                            <button onClick={toggleTheme} className="p-1">
+                              <svg
+                                id="themeIcon"
+                                className="w-4 h-4"
+                                fill={theme === "dark" ? "#66b0ff" : "#3B82F6"}
+                                viewBox="0 0 24 24"
+                              >
+                                {theme === "light" ? (
+                                  <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                                ) : (
+                                  <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                                )}
+                              </svg>
+                            </button>
+                            <div className="tooltip tooltip-top">Theme: Toggle between light and dark mode</div>
+                          </div>
+                        </div>
+                      </header>
 
-              {/* Manage Tab */}
-              <div
-                id="manage"
-                className="tab-content"
-                style={{ display: activeTab === "manage" ? "block" : "none" }}
-              >
-                <div id="categories">
-                  {filteredCategories.map((category, catIndex) => {
-                    const isCollapsed = collapsedCategories.has(category.name);
-                    return (
-                      <div
-                        key={catIndex}
-                        className={`category p-2 mb-2 rounded-md ${
-                          isCollapsed ? "collapsed" : ""
-                        } ${theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-300"} border`}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, "category", catIndex)}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={handleDragOver}
-                        onDragLeave={handleDragLeave}
-                        onDrop={(e) => handleDrop(e, catIndex)}
-                        data-cat-index={catIndex}
-                      >
-                        <h3 className="flex items-center text-base m-0">
-                          <span
-                            className="collapse-toggle cursor-pointer mr-1 font-bold w-5 text-center"
-                            onClick={() => toggleCategory(category.name)}
-                          >
-                            {isCollapsed ? "+" : "-"}
-                          </span>
-                          <span
-                            className="flex-1 cursor-pointer"
-                            onClick={() => editCategoryName(catIndex)}
-                          >
-                            {category.name}
-                          </span>
-                          <div className="flex gap-1">
-                            <button
-                              className={`p-1 border rounded-md ${
-                                theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                      {/* Settings Dropdown */}
+                      {showSettings && (
+                        <div
+                          className={`absolute right-4 mt-2 w-48 rounded-md shadow-lg ${
+                            theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-white border-gray-300"
+                          } border z-10`}
+                        >
+                          <div className="p-2">
+                            <div className="text-sm font-medium mb-1">Sort Categories</div>
+                            <select
+                              id="sortCategories"
+                              value={sortPreference}
+                              onChange={(e) => setSortPreference(e.target.value)}
+                              className={`w-full p-1 text-sm rounded-md ${
+                                theme === "dark" ? "bg-gray-600 text-gray-200" : "bg-gray-100 text-gray-700"
                               }`}
-                              onClick={() => alert("Opening all tabs in new windows")}
-                              title="Open All Tabs"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
+                              <option value="name-asc">Name (A-Z)</option>
+                              <option value="name-desc">Name (Z-A)</option>
+                              <option value="tabs-asc">Tabs (Low to High)</option>
+                              <option value="tabs-desc">Tabs (High to Low)</option>
+                            </select>
+                            <hr className={`my-2 ${theme === "dark" ? "border-gray-600" : "border-gray-300"}`} />
+                            <button
+                              className={`w-full p-1 text-sm rounded-md text-left ${
+                                theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
+                              }`}
+                              onClick={() => alert("Auto-categorization not available in demo")}
+                            >
+                              Auto-Categorize Tabs
                             </button>
                             <button
-                              className={`p-1 border rounded-md ${
-                                theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                              className={`w-full p-1 text-sm rounded-md text-left ${
+                                theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
                               }`}
-                              onClick={() => {
-                                const otherCats = categories.filter((_, i) => i !== catIndex);
-                                if (otherCats.length === 0) {
-                                  showError("Need at least two categories to merge");
-                                  return;
-                                }
-                                const targetIndex = prompt(
-                                  `Enter the index to merge "${category.name}" into:\n` +
-                                    otherCats.map((cat, i) => `${i}: ${cat.name}`).join("\n")
-                                );
-                                const target = parseInt(targetIndex);
-                                if (isNaN(target) || target < 0 || target >= otherCats.length) {
-                                  showError("Invalid category index");
-                                  return;
-                                }
-                                if (window.confirm(`Merge "${category.name}" into "${otherCats[target].name}"?`)) {
-                                  setLastAction({
-                                    type: "merge-categories",
-                                    sourceIndex: catIndex,
-                                    targetIndex: categories.findIndex((c) => c.name === otherCats[target].name),
-                                    sourceCategory: category,
-                                    targetTabsBefore: [...otherCats[target].tabs],
-                                    sourceWasCollapsed: collapsedCategories.has(category.name),
-                                  });
-                                  const newCategories = [...categories];
-                                  newCategories[
-                                    categories.findIndex((c) => c.name === otherCats[target].name)
-                                  ].tabs.push(...category.tabs);
-                                  newCategories.splice(catIndex, 1);
-                                  const newCollapsed = new Set(collapsedCategories);
-                                  newCollapsed.delete(category.name);
-                                  setCategories(newCategories);
-                                  setFilteredCategories(applySort(newCategories));
-                                  setCollapsedCategories(newCollapsed);
-                                  updateCategoryDropdown();
-                                  setTimeout(() => setLastAction(null), 5000);
-                                }
-                              }}
-                              title="Merge Category"
+                              onClick={() => alert("Export not available in demo")}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M19 11H5m14 0l-4-4m4 4l-4 4"
-                                />
-                              </svg>
+                              Export Categories
                             </button>
                             <button
-                              className={`p-1 border rounded-md ${
-                                theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                              className={`w-full p-1 text-sm rounded-md text-left ${
+                                theme === "dark" ? "hover:bg-gray-600" : "hover:bg-blue-100"
                               }`}
-                              onClick={() => deleteCategory(catIndex)}
-                              title="Delete Category"
+                              onClick={() => alert("Import not available in demo")}
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
+                              Import Categories
                             </button>
                           </div>
-                        </h3>
-                        {!isCollapsed &&
-                          category.tabs.map((tab, tabIndex) => (
-                            <div key={tabIndex}>
+                        </div>
+                      )}
+
+                      {/* Tabs */}
+                      <nav className="flex mb-2">
+                        {["create", "manage"].map((tab) => (
+                          <div className="tooltip-wrapper flex-1" key={tab}>
+                            <button
+                              data-tab={tab}
+                              className={`w-full p-2 text-sm rounded-md ${
+                                activeTab === tab
+                                  ? theme === "dark"
+                                    ? "bg-blue-400 text-white"
+                                    : "bg-blue-500 text-white"
+                                  : theme === "dark"
+                                  ? "bg-gray-600 text-gray-200"
+                                  : "bg-gray-200 text-gray-700"
+                              }`}
+                              onClick={() => setActiveTab(tab)}
+                            >
+                              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </button>
+                            <div className="tooltip tooltip-top">Tabs: Switch between Create and Manage modes</div>
+                          </div>
+                        ))}
+                      </nav>
+
+                      {/* Create Tab */}
+                      <div
+                        id="create"
+                        className="tab-content"
+                        style={{ display: activeTab === "create" ? "block" : "none" }}
+                      >
+                        <div className="flex flex-col gap-2">
+                          <div className="tooltip-wrapper">
+                            <input
+                              id="newCategory"
+                              type="text"
+                              placeholder="New category name"
+                              className={`p-2 text-sm border rounded-md ${
+                                theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                              }`}
+                            />
+                            <div className="tooltip tooltip-top">Category Management: Enter a new category name</div>
+                          </div>
+                          <div className="tooltip-wrapper">
+                            <button
+                              id="addCategoryBtn"
+                              onClick={addCategory}
+                              className={`p-2 text-sm rounded-md ${
+                                theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
+                              } text-white`}
+                            >
+                              Add Category
+                            </button>
+                            <div className="tooltip tooltip-top">Category Management: Add a new category</div>
+                          </div>
+                          <div className="tooltip-wrapper">
+                            <select
+                              id="addToCategory"
+                              className={`p-2 text-sm border rounded-md ${
+                                theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                              }`}
+                            >
+                              <option value="">Select category to add tabs</option>
+                              {categories.map((cat, index) => (
+                                <option key={index} value={index}>
+                                  {cat.name}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="tooltip tooltip-top">Category Management: Select a category to add tabs</div>
+                          </div>
+                          <div className="tooltip-wrapper">
+                            <button
+                              id="addToCategoryBtn"
+                              onClick={() => {
+                                const dropdown = document.getElementById("addToCategory");
+                                const catIndex = parseInt(dropdown.value);
+                                if (isNaN(catIndex)) {
+                                  showError("Please select a category");
+                                  return;
+                                }
+                                addTabsToCategory(catIndex);
+                              }}
+                              className={`p-2 text-sm rounded-md ${
+                                theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
+                              } text-white`}
+                            >
+                              Add Tabs to Category
+                            </button>
+                            <div className="tooltip tooltip-top">Category Management: Add sample tabs to the selected category</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Manage Tab */}
+                      <div
+                        id="manage"
+                        className="tab-content"
+                        style={{ display: activeTab === "manage" ? "block" : "none" }}
+                      >
+                        <div id="categories">
+                          {filteredCategories.map((category, catIndex) => {
+                            const isCollapsed = collapsedCategories.has(category.name);
+                            return (
                               <div
-                                className={`tab-item flex items-center p-1 mt-1 rounded-md ${
-                                  theme === "dark" ? "bg-gray-600 border-gray-500" : "bg-white border-gray-200"
-                                } border`}
+                                key={catIndex}
+                                className={`category p-2 mb-2 rounded-md ${
+                                  isCollapsed ? "collapsed" : ""
+                                } ${theme === "dark" ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-300"} border`}
                                 draggable
-                                onDragStart={(e) => handleDragStart(e, "tab", catIndex, tabIndex)}
+                                onDragStart={(e) => handleDragStart(e, "category", catIndex)}
                                 onDragEnd={handleDragEnd}
                                 onDragOver={handleDragOver}
                                 onDragLeave={handleDragLeave}
-                                onDrop={(e) => handleDrop(e, catIndex, tabIndex)}
+                                onDrop={(e) => handleDrop(e, catIndex)}
                                 data-cat-index={catIndex}
-                                data-tab-index={tabIndex}
                               >
-                                <input
-                                  type="checkbox"
-                                  className="mr-1"
-                                  onChange={() => {
-                                    const checkboxes = document.querySelectorAll(
-                                      `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]`
-                                    );
-                                    const selectAll = document.querySelector(
-                                      `.select-all-checkbox[data-cat-index="${catIndex}"]`
-                                    );
-                                    const checkedCount = Array.from(checkboxes).filter((cb) => cb.checked).length;
-                                    selectAll.checked = checkedCount === checkboxes.length && checkboxes.length > 0;
-                                    selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
-                                  }}
-                                />
-                                <span
-                                  className="flex-1 cursor-pointer"
-                                  onClick={() => {
-                                    const newTitle = prompt("Edit tab title:", tab.title);
-                                    const newUrl = prompt("Edit tab URL:", tab.url);
-                                    if (newTitle && newUrl) {
-                                      const newCategories = [...categories];
-                                      newCategories[catIndex].tabs[tabIndex] = {
-                                        title: newTitle.trim(),
-                                        url: newUrl.trim(),
-                                        note: tab.note,
-                                      };
-                                      setCategories(newCategories);
-                                      setFilteredCategories(applySort(newCategories));
-                                    }
-                                  }}
-                                >
-                                  {tab.title}
-                                </span>
-                                <button
-                                  className="text-xs p-1"
-                                  onClick={() => editTabNote(catIndex, tabIndex)}
-                                >
-                                  {tab.note ? "Edit Note" : "Add Note"}
-                                </button>
-                                <button
-                                  className="text-xs p-1"
-                                  onClick={() => deleteTab(catIndex, tabIndex)}
-                                >
-                                  Remove
-                                </button>
+                                <h3 className="flex items-center text-base m-0">
+                                  <span
+                                    className="collapse-toggle cursor-pointer mr-1 font-bold w-5 text-center"
+                                    onClick={() => toggleCategory(category.name)}
+                                  >
+                                    {isCollapsed ? "+" : "-"}
+                                  </span>
+                                  <span
+                                    className="flex-1 cursor-pointer"
+                                    onClick={() => editCategoryName(catIndex)}
+                                  >
+                                    {category.name}
+                                  </span>
+                                  <div className="flex gap-1">
+                                    <button
+                                      className={`p-1 border rounded-md ${
+                                        theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                                      }`}
+                                      onClick={() => alert("Opening all tabs in new windows")}
+                                      title="Open All Tabs"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2"
+                                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                        />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      className={`p-1 border rounded-md ${
+                                        theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                                      }`}
+                                      onClick={() => {
+                                        const otherCats = categories.filter((_, i) => i !== catIndex);
+                                        if (otherCats.length === 0) {
+                                          showError("Need at least two categories to merge");
+                                          return;
+                                        }
+                                        const targetIndex = prompt(
+                                          `Enter the index to merge "${category.name}" into:\n` +
+                                            otherCats.map((cat, i) => `${i}: ${cat.name}`).join("\n")
+                                        );
+                                        const target = parseInt(targetIndex);
+                                        if (isNaN(target) || target < 0 || target >= otherCats.length) {
+                                          showError("Invalid category index");
+                                          return;
+                                        }
+                                        if (window.confirm(`Merge "${category.name}" into "${otherCats[target].name}"?`)) {
+                                          setLastAction({
+                                            type: "merge-categories",
+                                            sourceIndex: catIndex,
+                                            targetIndex: categories.findIndex((c) => c.name === otherCats[target].name),
+                                            sourceCategory: category,
+                                            targetTabsBefore: [...otherCats[target].tabs],
+                                            sourceWasCollapsed: collapsedCategories.has(category.name),
+                                          });
+                                          const newCategories = [...categories];
+                                          newCategories[
+                                            categories.findIndex((c) => c.name === otherCats[target].name)
+                                          ].tabs.push(...category.tabs);
+                                          newCategories.splice(catIndex, 1);
+                                          const newCollapsed = new Set(collapsedCategories);
+                                          newCollapsed.delete(category.name);
+                                          setCategories(newCategories);
+                                          setFilteredCategories(applySort(newCategories));
+                                          setCollapsedCategories(newCollapsed);
+                                          updateCategoryDropdown();
+                                          setTimeout(() => setLastAction(null), 5000);
+                                        }
+                                      }}
+                                      title="Merge Category"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2"
+                                          d="M19 11H5m14 0l-4-4m4 4l-4 4"
+                                        />
+                                      </svg>
+                                    </button>
+                                    <button
+                                      className={`p-1 border rounded-md ${
+                                        theme === "dark" ? "border-gray-600 hover:bg-blue-400" : "border-gray-300 hover:bg-blue-600 hover:text-white"
+                                      }`}
+                                      onClick={() => deleteCategory(catIndex)}
+                                      title="Delete Category"
+                                    >
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth="2"
+                                          d="M6 18L18 6M6 6l12 12"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </div>
+                                </h3>
+                                {!isCollapsed &&
+                                  category.tabs.map((tab, tabIndex) => (
+                                    <div key={tabIndex}>
+                                      <div
+                                        className={`tab-item flex items-center p-1 mt-1 rounded-md ${
+                                          theme === "dark" ? "bg-gray-600 border-gray-500" : "bg-white border-gray-200"
+                                        } border`}
+                                        draggable
+                                        onDragStart={(e) => handleDragStart(e, "tab", catIndex, tabIndex)}
+                                        onDragEnd={handleDragEnd}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={(e) => handleDrop(e, catIndex, tabIndex)}
+                                        data-cat-index={catIndex}
+                                        data-tab-index={tabIndex}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          className="mr-1"
+                                          onChange={() => {
+                                            const checkboxes = document.querySelectorAll(
+                                              `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]`
+                                            );
+                                            const selectAll = document.querySelector(
+                                              `.select-all-checkbox[data-cat-index="${catIndex}"]`
+                                            );
+                                            const checkedCount = Array.from(checkboxes).filter((cb) => cb.checked).length;
+                                            selectAll.checked = checkedCount === checkboxes.length && checkboxes.length > 0;
+                                            selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+                                          }}
+                                        />
+                                        <span
+                                          className="flex-1 cursor-pointer"
+                                          onClick={() => {
+                                            const newTitle = prompt("Edit tab title:", tab.title);
+                                            const newUrl = prompt("Edit tab URL:", tab.url);
+                                            if (newTitle && newUrl) {
+                                              const newCategories = [...categories];
+                                              newCategories[catIndex].tabs[tabIndex] = {
+                                                title: newTitle.trim(),
+                                                url: newUrl.trim(),
+                                                note: tab.note,
+                                              };
+                                              setCategories(newCategories);
+                                              setFilteredCategories(applySort(newCategories));
+                                            }
+                                          }}
+                                        >
+                                          {tab.title}
+                                        </span>
+                                        <button
+                                          className="text-xs p-1"
+                                          onClick={() => editTabNote(catIndex, tabIndex)}
+                                        >
+                                          {tab.note ? "Edit Note" : "Add Note"}
+                                        </button>
+                                        <button
+                                          className="text-xs p-1"
+                                          onClick={() => deleteTab(catIndex, tabIndex)}
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                      {tab.note && (
+                                        <div
+                                          className={`tab-note ml-5 italic ${
+                                            theme === "dark" ? "text-gray-400" : "text-gray-600"
+                                          }`}
+                                        >
+                                          {tab.note}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                {!isCollapsed && (
+                                  <div className="bulk-actions flex items-center mt-1">
+                                    <label className="select-all mr-2 flex items-center">
+                                      <input
+                                        type="checkbox"
+                                        className="select-all-checkbox mr-1"
+                                        data-cat-index={catIndex}
+                                        onChange={(e) => {
+                                          const checkboxes = document.querySelectorAll(
+                                            `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]`
+                                          );
+                                          checkboxes.forEach((cb) => (cb.checked = e.target.checked));
+                                          e.target.indeterminate = false;
+                                        }}
+                                      />
+                                      Select All
+                                    </label>
+                                    <select
+                                      className="p-1 text-sm rounded-md"
+                                      onChange={(e) => {
+                                        const action = e.target.value;
+                                        const checkboxes = document.querySelectorAll(
+                                          `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]:checked`
+                                        );
+                                        const selectedIndices = Array.from(checkboxes)
+                                          .map((cb) => parseInt(cb.parentElement.dataset.tabIndex))
+                                          .sort((a, b) => b - a);
+                                        if (selectedIndices.length === 0) {
+                                          showError("No tabs selected");
+                                          e.target.value = "";
+                                          return;
+                                        }
+                                        if (action === "delete") {
+                                          if (window.confirm(`Delete ${selectedIndices.length} selected tab(s)?`)) {
+                                            setLastAction({
+                                              type: "delete-tabs",
+                                              catIndex,
+                                              deletedTabs: selectedIndices.map((index) => ({
+                                                index,
+                                                tab: categories[catIndex].tabs[index],
+                                              })),
+                                            });
+                                            const newCategories = [...categories];
+                                            selectedIndices.forEach((index) =>
+                                              newCategories[catIndex].tabs.splice(index, 1)
+                                            );
+                                            setCategories(newCategories);
+                                            setFilteredCategories(applySort(newCategories));
+                                            setTimeout(() => setLastAction(null), 5000);
+                                          }
+                                        } else if (action === "move") {
+                                          const otherCats = categories.filter((_, i) => i !== catIndex);
+                                          const targetIndex = prompt(
+                                            `Enter the index to move ${selectedIndices.length} tab(s) to:\n` +
+                                              otherCats.map((cat, i) => `${i}: ${cat.name}`).join("\n")
+                                          );
+                                          const target = parseInt(targetIndex);
+                                          if (isNaN(target) || target < 0 || target >= otherCats.length) {
+                                            showError("Invalid category index");
+                                            e.target.value = "";
+                                            return;
+                                          }
+                                          const newCategories = [...categories];
+                                          const movedTabs = selectedIndices.map(
+                                            (index) => newCategories[catIndex].tabs[index]
+                                          );
+                                          const { uniqueTabs } = deduplicateTabs(
+                                            newCategories[categories.findIndex((c) => c.name === otherCats[target].name)]
+                                              .tabs,
+                                            movedTabs
+                                          );
+                                          newCategories[
+                                            categories.findIndex((c) => c.name === otherCats[target].name)
+                                          ].tabs.push(...uniqueTabs);
+                                          selectedIndices.forEach((index) =>
+                                            newCategories[catIndex].tabs.splice(index, 1)
+                                          );
+                                          setCategories(newCategories);
+                                          setFilteredCategories(applySort(newCategories));
+                                        } else if (action === "open") {
+                                          alert(`Opening ${selectedIndices.length} selected tabs`);
+                                        }
+                                        e.target.value = "";
+                                      }}
+                                    >
+                                      <option value="">Bulk Actions</option>
+                                      <option value="delete">Delete Selected</option>
+                                      <option value="move">Move to Category</option>
+                                      <option value="open">Open Selected</option>
+                                    </select>
+                                  </div>
+                                )}
+                                {!isCollapsed && (
+                                  <button
+                                    className="mt-1 p-1 text-sm w-full rounded-md"
+                                    onClick={() => addTabsToCategory(catIndex)}
+                                  >
+                                    Add Current Tabs
+                                  </button>
+                                )}
                               </div>
-                              {tab.note && (
-                                <div
-                                  className={`tab-note ml-5 italic ${
-                                    theme === "dark" ? "text-gray-400" : "text-gray-600"
-                                  }`}
-                                >
-                                  {tab.note}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        {!isCollapsed && (
-                          <div className="bulk-actions flex items-center mt-1">
-                            <label className="select-all mr-2 flex items-center">
-                              <input
-                                type="checkbox"
-                                className="select-all-checkbox mr-1"
-                                data-cat-index={catIndex}
-                                onChange={(e) => {
-                                  const checkboxes = document.querySelectorAll(
-                                    `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]`
-                                  );
-                                  checkboxes.forEach((cb) => (cb.checked = e.target.checked));
-                                  e.target.indeterminate = false;
-                                }}
-                              />
-                              Select All
-                            </label>
-                            <select
-                              className="p-1 text-sm rounded-md"
-                              onChange={(e) => {
-                                const action = e.target.value;
-                                const checkboxes = document.querySelectorAll(
-                                  `.tab-item[data-cat-index="${catIndex}"] input[type="checkbox"]:checked`
-                                );
-                                const selectedIndices = Array.from(checkboxes)
-                                  .map((cb) => parseInt(cb.parentElement.dataset.tabIndex))
-                                  .sort((a, b) => b - a);
-                                if (selectedIndices.length === 0) {
-                                  showError("No tabs selected");
-                                  e.target.value = "";
-                                  return;
-                                }
-                                if (action === "delete") {
-                                  if (window.confirm(`Delete ${selectedIndices.length} selected tab(s)?`)) {
-                                    setLastAction({
-                                      type: "delete-tabs",
-                                      catIndex,
-                                      deletedTabs: selectedIndices.map((index) => ({
-                                        index,
-                                        tab: categories[catIndex].tabs[index],
-                                      })),
-                                    });
-                                    const newCategories = [...categories];
-                                    selectedIndices.forEach((index) =>
-                                      newCategories[catIndex].tabs.splice(index, 1)
-                                    );
-                                    setCategories(newCategories);
-                                    setFilteredCategories(applySort(newCategories));
-                                    setTimeout(() => setLastAction(null), 5000);
-                                  }
-                                } else if (action === "move") {
-                                  const otherCats = categories.filter((_, i) => i !== catIndex);
-                                  const targetIndex = prompt(
-                                    `Enter the index to move ${selectedIndices.length} tab(s) to:\n` +
-                                      otherCats.map((cat, i) => `${i}: ${cat.name}`).join("\n")
-                                  );
-                                  const target = parseInt(targetIndex);
-                                  if (isNaN(target) || target < 0 || target >= otherCats.length) {
-                                    showError("Invalid category index");
-                                    e.target.value = "";
-                                    return;
-                                  }
-                                  const newCategories = [...categories];
-                                  const movedTabs = selectedIndices.map(
-                                    (index) => newCategories[catIndex].tabs[index]
-                                  );
-                                  const { uniqueTabs } = deduplicateTabs(
-                                    newCategories[categories.findIndex((c) => c.name === otherCats[target].name)]
-                                      .tabs,
-                                    movedTabs
-                                  );
-                                  newCategories[
-                                    categories.findIndex((c) => c.name === otherCats[target].name)
-                                  ].tabs.push(...uniqueTabs);
-                                  selectedIndices.forEach((index) =>
-                                    newCategories[catIndex].tabs.splice(index, 1)
-                                  );
-                                  setCategories(newCategories);
-                                  setFilteredCategories(applySort(newCategories));
-                                } else if (action === "open") {
-                                  alert(`Opening ${selectedIndices.length} selected tabs`);
-                                }
-                                e.target.value = "";
-                              }}
-                            >
-                              <option value="">Bulk Actions</option>
-                              <option value="delete">Delete Selected</option>
-                              <option value="move">Move to Category</option>
-                              <option value="open">Open Selected</option>
-                            </select>
-                          </div>
-                        )}
-                        {!isCollapsed && (
-                          <button
-                            className="mt-1 p-1 text-sm w-full rounded-md"
-                            onClick={() => addTabsToCategory(catIndex)}
-                          >
-                            Add Current Tabs
-                          </button>
-                        )}
+                            );
+                          })}
+                          {filteredCategories.length === 0 && <p className="text-sm">No categories to display.</p>}
+                        </div>
                       </div>
-                    );
-                  })}
-                  {filteredCategories.length === 0 && <p className="text-sm">No categories to display.</p>}
-                </div>
-              </div>
 
-              {/* Error and Undo */}
-              {error && (
-                <div
-                  className={`text-center text-sm mt-2 ${theme === "dark" ? "text-red-400" : "text-red-500"}`}
-                >
-                  {error}
+                      {/* Error and Undo */}
+                      {error && (
+                        <div
+                          className={`text-center text-sm mt-2 ${theme === "dark" ? "text-red-400" : "text-red-500"}`}
+                        >
+                          {error}
+                        </div>
+                      )}
+                      {lastAction && (
+                        <div className="tooltip-wrapper">
+                          <button
+                            className={`w-full p-2 text-sm rounded-md mt-2 ${
+                              theme === "dark" ? "bg-red-500 hover:bg-red-600" : "bg-red-600 hover:bg-red-700"
+                            } text-white`}
+                            onClick={() => {
+                              const newCategories = [...categories];
+                              if (lastAction.type === "delete-tabs") {
+                                lastAction.deletedTabs.forEach(({ index, tab }) => {
+                                  newCategories[lastAction.catIndex].tabs.splice(index, 0, tab);
+                                });
+                              } else if (lastAction.type === "delete-category") {
+                                newCategories.splice(lastAction.index, 0, lastAction.category);
+                                if (lastAction.wasCollapsed) {
+                                  setCollapsedCategories(
+                                    new Set([...collapsedCategories, lastAction.category.name])
+                                  );
+                                }
+                              } else if (lastAction.type === "merge-categories") {
+                                newCategories.splice(lastAction.sourceIndex, 0, lastAction.sourceCategory);
+                                newCategories[lastAction.targetIndex].tabs = lastAction.targetTabsBefore;
+                                if (lastAction.sourceWasCollapsed) {
+                                  setCollapsedCategories(
+                                    new Set([...collapsedCategories, lastAction.sourceCategory.name])
+                                  );
+                                }
+                              }
+                              setCategories(newCategories);
+                              setFilteredCategories(applySort(newCategories));
+                              setLastAction(null);
+                            }}
+                          >
+                            Undo
+                          </button>
+                          <div className="tooltip tooltip-top">Undo: Revert recent actions</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <video
+                    className="rounded-lg shadow-sm w-full max-w-[800px]"
+                    controls
+                    poster="/tabwise/demo-video-poster.png"
+                  >
+                    <source src="/tabwise/demo-video.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
                 </div>
               )}
-              {lastAction && (
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    // Pricing Component
+    const Pricing = () => {
+      const [isYearly, setIsYearly] = useState(false);
+
+      return (
+        <section id="pricing" className="py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl font-bold text-blue-900 text-center mb-8">Simple, Transparent Pricing</h2>
+            <p className="text-lg text-gray-600 mb-6 text-center max-w-2xl mx-auto">
+              Choose a plan that fits your needs. Toggle to see monthly or yearly pricing for our best-selling Pro plan.
+            </p>
+            <div className="flex justify-center mb-6">
+              <div className="inline-flex rounded-md shadow-sm">
                 <button
-                  className={`w-full p-2 text-sm rounded-md mt-2 ${
-                    theme === "dark" ? "bg-red-500 hover:bg-red-600" : "bg-red-600 hover:bg-red-700"
-                  } text-white`}
-                  onClick={() => {
-                    const newCategories = [...categories];
-                    if (lastAction.type === "delete-tabs") {
-                      lastAction.deletedTabs.forEach(({ index, tab }) => {
-                        newCategories[lastAction.catIndex].tabs.splice(index, 0, tab);
-                      });
-                    } else if (lastAction.type === "delete-category") {
-                      newCategories.splice(lastAction.index, 0, lastAction.category);
-                      if (lastAction.wasCollapsed) {
-                        setCollapsedCategories(
-                          new Set([...collapsedCategories, lastAction.category.name])
-                        );
-                      }
-                    } else if (lastAction.type === "merge-categories") {
-                      newCategories.splice(lastAction.sourceIndex, 0, lastAction.sourceCategory);
-                      newCategories[lastAction.targetIndex].tabs = lastAction.targetTabsBefore;
-                      if (lastAction.sourceWasCollapsed) {
-                        setCollapsedCategories(
-                          new Set([...collapsedCategories, lastAction.sourceCategory.name])
-                        );
-                      }
-                    }
-                    setCategories(newCategories);
-                    setFilteredCategories(applySort(newCategories));
-                    setLastAction(null);
-                  }}
+                  onClick={() => setIsYearly(false)}
+                  className={`px-4 py-2 text-sm font-medium rounded-l-md ${
+                    !isYearly ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  }`}
                 >
-                  Undo
+                  Monthly
                 </button>
-              )}
+                <button
+                  onClick={() => setIsYearly(true)}
+                  className={`px-4 py-2 text-sm font-medium rounded-r-md ${
+                    isYearly ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  Yearly
+                </button>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  plan: "Free",
+                  price: "$0/mo",
+                  desc: "Perfect for casual users who want basic tab organization. <a href='/tabwise/contact.html' className='text-blue-500 hover:text-blue-600'>Contact us</a> for support.",
+                  features: [
+                    "Save up to 10 tabs per category",
+                    "Manual session save/restore",
+                    "Light/Dark theme support",
+                  ],
+                  cta: "Get Started",
+                  isBestSeller: false,
+                },
+                {
+                  plan: "Pro",
+                  price: isYearly ? "$20/yr" : "$2/mo",
+                  desc: "Ideal for daily users who want enhanced productivity features.",
+                  features: [
+                    "Unlimited categories and tab saves",
+                    "AI-powered auto-categorization",
+                    "Bulk tab operations",
+                    "Export & import tab library",
+                    "Cloud sync across devices",
+                  ],
+                  cta: "Go Pro",
+                  isBestSeller: true,
+                },
+                {
+                  plan: "Lifetime",
+                  price: "$25 one-time",
+                  desc: "Best for power users. Get all Pro features forever. See <a href='/tabwise/blog/best-tab-extensions-chrome-2025.html' className='text-blue-500 hover:text-blue-600'>top Chrome extensions</a>.",
+                  features: [
+                    "All Pro features for life",
+                    "No recurring fees",
+                    "Lifetime updates and upgrades",
+                  ],
+                  cta: "Get Lifetime",
+                  isBestSeller: false,
+                },
+              ].map((plan, index) => (
+                <div key={index} className="relative bg-gray-50 p-5 rounded-lg shadow-sm text-center">
+                  {plan.isBestSeller && (
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-yellow-400 text-gray-900 text-sm font-medium px-3 py-1 rounded-full">
+                      Best Seller
+                    </div>
+                  )}
+                  <h3 className="text-2xl font-medium text-blue-900 mb-2">{plan.plan}</h3>
+                  <p className="text-4xl font-bold text-blue-900 mb-4">{plan.price}</p>
+                  <p className="text-gray-600 mb-6" dangerouslySetInnerHTML={{ __html: plan.desc }}></p>
+                  <ul className="text-gray-600 mb-6 space-y-2">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-center justify-center">
+                        <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <a
+                    href="#"
+                    className={`inline-block px-6 py-3 rounded-md text-lg ${
+                      plan.isBestSeller
+                        ? "bg-blue-500 text-white hover:bg-blue-600"
+                        : "border border-blue-900 text-blue-900 hover:bg-blue-50"
+                    }`}
+                  >
+                    {plan.cta}
+                  </a>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -1298,8 +1350,7 @@
           <Navbar />
           <Hero />
           <Features />
-          <DemoVideo />
-          <Demo />
+          <Experience />
           <Pricing />
           <Blog />
           <Footer />
