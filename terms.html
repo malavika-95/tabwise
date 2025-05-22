@@ -1,215 +1,273 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Terms of Service - Tabwise</title>
-    <meta name="description" content="Read the Terms of Service for using Tabwise, the browser tab management Chrome extension."/>
-    <meta name="keywords" content="Tabwise, terms of service, Chrome extension, tab management"/>
-    <meta name="author" content="Tabwise Team"/>
-    <meta name="robots" content="index, follow"/>
-    <link rel="canonical" href="https://www.tabwise.app/terms"/>
-    <meta property="og:title" content="Terms of Service - Tabwise"/>
-    <meta property="og:description" content="Review the Terms of Service for Tabwise, your tab management solution."/>
-    <meta property="og:image" content="https://www.tabwise.app/logo.png"/>
-    <meta property="og:url" content="https://www.tabwise.app/terms"/>
-    <meta property="og:type" content="website"/>
-    <meta name="twitter:card" content="summary"/>
-    <meta name="twitter:title" content="Terms of Service - Tabwise"/>
-    <meta name="twitter:description" content="Review the Terms of Service for Tabwise, your tab management solution."/>
-    <meta name="twitter:image" content="https://www.tabwise.app/logo.png"/>
-    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.9/babel.min.js" defer></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { font-family: 'Inter', 'Nunito', sans-serif; }
-        .waitlist-popup { backdrop-filter: blur(5px); }
-    </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tabwise Terms of Service</title>
+<meta name="description" content="Read Tabwise's terms of service to understand the rules and guidelines for using our browser tab management Chrome extension."/>
+<meta name="keywords" content="Tabwise terms of service, browser tab management terms, productivity tool terms"/>
+<meta name="author" content="Tabwise Team"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://www.tabwise.app/terms.html"/>
+<meta property="og:title" content="Tabwise Terms of Service"/>
+<meta property="og:description" content="Read Tabwise's terms of service for using our browser tab management tool."/>
+<meta property="og:image" content="https://www.tabwise.app/tabwise/logo.png"/>
+<meta property="og:url" content="https://www.tabwise.app/terms.html"/>
+<meta property="og:type" content="website"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Tabwise Terms of Service"/>
+<meta name="twitter:description" content="Read Tabwise's terms of service for using our browser tab management tool."/>
+<meta name="twitter:image" content="https://www.tabwise.app/tabwise/logo.png"/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Tabwise Terms of Service",
+  "url": "https://www.tabwise.app/terms.html",
+  "description": "Tabwise's terms of service outline the rules and guidelines for using our browser tab management tool."
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.9/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body { font-family: 'Inter', 'Nunito', sans-serif; }
+</style>
 </head>
 <body class="bg-gray-50 text-gray-700">
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState } = React;
+<div id="root"></div>
+<script type="text/babel">
+    const { useState } = React;
 
-        // Waitlist Popup Component
-        const WaitlistPopup = ({ isOpen, onClose }) => {
-            const [email, setEmail] = useState('');
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                alert(`Email submitted: ${email}`);
-                setEmail('');
-                onClose();
-            };
-            if (!isOpen) return null;
-            return (
-                <div className="waitlist-popup fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg max-w-md w-full">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-bold text-blue-900">Join the Tabwise Waitlist</h3>
-                            <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <p className="text-gray-600 mb-4">Be the first to try Tabwise! Enter your email to join our waitlist.</p>
-                        <div className="flex flex-col gap-2">
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                className="p-2 text-sm border rounded-md bg-white text-gray-700 border-gray-300"
-                                required
-                            />
-                            <button
-                                onClick={handleSubmit}
-                                className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 text-sm"
-                            >
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+    // Waitlist Modal Component
+    const WaitlistModal = ({ isOpen, onClose }) => {
+      const [email, setEmail] = useState("");
+      const [message, setMessage] = useState("");
 
-        // Navigation Component
-        const Navbar = () => {
-            const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
-            return (
-                <nav className="bg-white shadow-sm fixed w-full z-10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <div className="flex justify-between h-16">
-                            <div className="flex">
-                                <a href="/" className="flex-shrink-0 flex items-center">
-                                    <img src="/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
-                                    <span className="ml-2 text-xl font-bold text-blue-900">Tabwise</span>
-                                </a>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <a href="/#features" className="text-gray-600 hover:text-blue-600">Features</a>
-                                <a href="/#pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
-                                <a href="/#demo" className="text-gray-600 hover:text-blue-600">Demo</a>
-                                <a href="/blog.html" className="text-gray-600 hover:text-blue-600">Blog</a>
-                                <button
-                                    onClick={() => setIsWaitlistOpen(true)}
-                                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                                >
-                                    Join Waitlist
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <WaitlistPopup isOpen={isWaitlistOpen} onClose={() => setIsWaitlistOpen(false)}/>
-                </nav>
-            );
-        };
+      const handleWaitlistSubmit = () => {
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setMessage("Please enter a valid email address");
+          setTimeout(() => setMessage(""), 3000);
+          return;
+        }
+        console.log("Waitlist email submitted:", email);
+        setMessage("Thank you for joining the waitlist!");
+        setEmail("");
+        setTimeout(() => {
+          setMessage("");
+          onClose();
+        }, 2000);
+      };
 
-        // Terms Content Component
-        const TermsContent = () => (
-            <section className="pt-24 pb-16 bg-white">
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-4xl font-bold text-blue-900 mb-6">Terms of Service</h1>
-                    <p className="text-gray-600 mb-8">Last updated: May 18, 2025</p>
-                    <div className="prose prose-blue">
-                        <h2>1. Acceptance of Terms</h2>
-                        <p>By accessing or using Tabwise (the “Service”), a browser tab management Chrome extension provided by Tabwise (“we,” “us,” or “our”), you agree to be bound by these Terms of Service (“Terms”). If you do not agree, please do not use the Service. Learn more about Tabwise on our <a href="/#features" className="text-blue-500 hover:text-blue-600">Features page</a>.</p>
-                        <h2>2. Use of Service</h2>
-                        <p>You may use Tabwise to organize, categorize, and save browser tabs as described in our <a href="/blog/tabwise-productivity-benefits.html" className="text-blue-500 hover:text-blue-600">productivity blog</a>. You agree to use the Service only for lawful purposes and in compliance with these Terms.</p>
-                        <h2>3. User Responsibilities</h2>
-                        <p>You are responsible for maintaining the confidentiality of your account and ensuring your use of the Service does not violate any applicable laws. For support, visit our <a href="/contact.html" className="text-blue-500 hover:text-blue-600">Contact page</a>.</p>
-                        <h2>4. Intellectual Property</h2>
-                        <p>All content, trademarks, and intellectual property related to Tabwise are owned by us or our licensors. You may not reproduce or distribute any part of the Service without permission.</p>
-                        <h2>5. Subscription and Payment</h2>
-                        <p>Tabwise offers free and premium plans. Details are available on our <a href="/#pricing" className="text-blue-500 hover:text-blue-600">Pricing page</a>. You agree to pay all applicable fees for premium plans.</p>
-                        <h2>6. Termination</h2>
-                        <p>We may suspend or terminate your access to the Service if you violate these Terms. You may stop using the Service at any time.</p>
-                        <h2>7. Limitation of Liability</h2>
-                        <p>Tabwise is provided “as is” without warranties. We are not liable for any damages arising from your use of the Service, to the extent permitted by law.</p>
-                        <h2>8. Governing Law</h2>
-                        <p>These Terms are governed by the laws of the State of California, USA, without regard to conflict of law principles.</p>
-                        <h2>9. Changes to Terms</h2>
-                        <p>We may update these Terms periodically. We will notify users of significant changes via the Service or email. Continued use of Tabwise after changes constitutes acceptance of the new Terms.</p>
-                        <h2>10. Contact Us</h2>
-                        <p>For questions about these Terms, please reach out via our <a href="/contact.html" className="text-blue-500 hover:text-blue-600">Contact page</a>.</p>
-                    </div>
-                </div>
-            </section>
-        );
+      if (!isOpen) return null;
 
-        // Footer Component
-        const Footer = () => (
-            <footer className="bg-blue-900 text-white py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col md:flex-row justify-between items-center">
-                        <div className="flex items-center mb-4 md:mb-0">
-                            <img src="/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
-                            <span className="ml-2 text-lg font-medium">Tabwise</span>
-                        </div>
-                        <div className="flex space-x-4">
-                            <a href="/privacy.html" className="hover:text-blue-300" rel="noopener noreferrer">Privacy</a>
-                            <a href="/terms.html" className="hover:text-blue-300" rel="noopener noreferrer">Terms</a>
-                            <a href="/contact.html" className="hover:text-blue-300" rel="noopener noreferrer">Contact</a>
-                        </div>
-                    </div>
-                    <p className="text-center mt-4 text-gray-400">© 2025 Tabwise. All rights reserved.</p>
-                </div>
-            </footer>
-        );
+      return (
+        <div className="modal-overlay fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-medium text-blue-900">Join the Tabwise Waitlist</h3>
+              <button onClick={onClose} className="text-gray-600 hover:text-gray-800">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <p className="text-gray-600 mb-4">Be the first to try Tabwise when it launches!</p>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="waitlist-input p-2 w-full text-sm border rounded-md bg-white text-gray-700 border-gray-300 focus:outline-none focus:border-blue-600 mb-4"
+            />
+            <button
+              onClick={handleWaitlistSubmit}
+              className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              Join Waitlist
+            </button>
+            {message && (
+              <div className={`text-center text-sm mt-2 ${message.includes("Thank") ? "text-green-600" : "text-red-500"}`}>
+                {message}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
 
-        // Main App Component
-        const App = () => (
-            <main>
-                <Navbar />
-                <TermsContent />
-                <Footer />
-            </main>
-        );
+    // Navigation Component
+    const Navbar = () => {
+      const [isModalOpen, setIsModalOpen] = useState(false);
 
-        // Render the App
-        const root = ReactDOM.createRoot(document.getElementById("root"));
-        root.render(<App />);
-    </script>
+      return (
+        <nav className="bg-white shadow-sm fixed w-full z-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
+              <div className="flex">
+                <a href="/" className="flex-shrink-0 flex items-center">
+                  <img src="/tabwise/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+                  <span className="ml-2 text-xl font-bold text-blue-900">Tabwise</span>
+                </a>
+              </div>
+              <div className="flex items-center space-x-4">
+                <a href="/#features" className="text-gray-600 hover:text-blue-600" aria-label="Features">Features</a>
+                <a href="/#pricing" className="text-gray-600 hover:text-blue-600" aria-label="Pricing">Pricing</a>
+                <a href="/#experience" className="text-gray-600 hover:text-blue-600" aria-label="Demo">Demo</a>
+                <a href="/blog.html" className="text-gray-600 hover:text-blue-600" aria-label="Blog">Blog</a>
+                <button
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-600"
+                >
+                  Join Waitlist
+                </button>
+              </div>
+            </div>
+          </div>
+          <WaitlistModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+        </nav>
+      );
+    };
+
+    // Terms Component
+    const Terms = () => (
+      <section className="pt-20 pb-10 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h1 className="text-4xl md:text-5xl font-bold text-blue-900 mb-6 text-center">Terms of Service</h1>
+          <p className="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">
+            These terms govern your use of Tabwise, our browser tab management Chrome extension. By using Tabwise, you agree to these terms.
+          </p>
+          <div className="bg-white p-6 rounded-lg shadow-sm">
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">1. Use of Tabwise</h2>
+            <p className="text-gray-600 mb-4">
+              You may use Tabwise to manage browser tabs for personal or professional use. You agree not to misuse the extension (e.g., for illegal activities).
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">2. Data and Privacy</h2>
+            <p className="text-gray-600 mb-4">
+              We collect and store tab data as outlined in our <a href="/privacy.html" className="text-blue-500 hover:text-blue-600">Privacy Policy</a>. You are responsible for the security of your account credentials.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">3. Intellectual Property</h2>
+            <p className="text-gray-600 mb-4">
+              Tabwise and its content are owned by the Tabwise Team. You may not copy, modify, or distribute Tabwise without permission.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">4. Limitation of Liability</h2>
+            <p className="text-gray-600 mb-4">
+              Tabwise is provided “as is.” We are not liable for any damages arising from your use of the extension, including data loss.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">5. Acceptable Use Policy</h2>
+            <p className="text-gray-600 mb-4">
+              You agree to use Tabwise in a manner that complies with all applicable laws and regulations. Prohibited activities include:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mb-4">
+              <li>Using Tabwise to store or manage tabs related to illegal content or activities.</li>
+              <li>Attempting to reverse-engineer, hack, or interfere with Tabwise’s functionality.</li>
+              <li>Using Tabwise to harm others, such as distributing malware through tab links.</li>
+            </ul>
+            <p className="text-gray-600 mb-4">
+              Violation of this policy may result in suspension or termination of your access to Tabwise.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">6. Account Responsibilities</h2>
+            <p className="text-gray-600 mb-4">
+              If you create an account with Tabwise (e.g., for cloud sync features), you are responsible for:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mb-4">
+              <li>Maintaining the confidentiality of your account credentials.</li>
+              <li>All activities that occur under your account.</li>
+              <li>Notifying us immediately at <a href="/contact.html" className="text-blue-500 hover:text-blue-600">support@tabwise.app</a> if you suspect unauthorized access to your account.</li>
+            </ul>
+            <p className="text-gray-600 mb-4">
+              We reserve the right to suspend accounts that violate these terms or engage in suspicious activity.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">7. Termination</h2>
+            <p className="text-gray-600 mb-4">
+              We may terminate or suspend your access to Tabwise at our discretion, with or without notice, for reasons including but not limited to:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mb-4">
+              <li>Violation of these Terms of Service or the <a href="/privacy.html" className="text-blue-500 hover:text-blue-600">Privacy Policy</a>.</li>
+              <li>Non-payment of applicable fees (e.g., for Pro or Lifetime plans).</li>
+              <li>Inactivity for an extended period (e.g., 12 months).</li>
+            </ul>
+            <p className="text-gray-600 mb-4">
+              Upon termination, your data may be deleted, and you will lose access to all Tabwise features. We are not responsible for any loss of data due to termination.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">8. Dispute Resolution</h2>
+            <p className="text-gray-600 mb-4">
+              Any disputes arising from your use of Tabwise will be resolved through binding arbitration in accordance with the rules of the American Arbitration Association (AAA). You agree to:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mb-4">
+              <li>Waive your right to a jury trial.</li>
+              <li>Resolve disputes on an individual basis, not as part of a class action.</li>
+              <li>Conduct arbitration in the state of California, USA, unless otherwise agreed.</li>
+            </ul>
+            <p className="text-gray-600 mb-4">
+              For questions about disputes, please <a href="/contact.html" className="text-blue-500 hover:text-blue-600">contact us</a>.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">9. Third-Party Services</h2>
+            <p className="text-gray-600 mb-4">
+              Tabwise may integrate with third-party services (e.g., cloud storage providers for sync features). We are not responsible for the performance, reliability, or policies of these services. By using Tabwise, you agree to comply with the terms of any third-party services we integrate with.
+            </p>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">10. Indemnification</h2>
+            <p className="text-gray-600 mb-4">
+              You agree to indemnify and hold harmless Tabwise and its affiliates, officers, and employees from any claims, damages, or liabilities arising from:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mb-4">
+              <li>Your use of Tabwise in violation of these terms.</li>
+              <li>Your violation of any third-party rights (e.g., intellectual property rights).</li>
+              <li>Any content you store or manage using Tabwise.</li>
+            </ul>
+
+            <h2 className="text-2xl font-medium text-blue-900 mb-4">11. Changes to Terms</h2>
+            <p className="text-gray-600 mb-4">
+              We may update these terms periodically. Check this page for the latest version. For questions, <a href="/contact.html" className="text-blue-500 hover:text-blue-600">contact us</a>.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+
+    // Footer Component
+    const Footer = () => (
+      <footer className="bg-blue-900 text-white py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center mb-4 md:mb-0">
+              <img src="/tabwise/logo.png" alt="Tabwise Logo" className="h-8 w-8"/>
+              <span className="ml-2 text-lg font-medium">Tabwise</span>
+            </div>
+            <div className="flex space-x-4">
+              <a href="/privacy.html" className="hover:text-blue-300" aria-label="Privacy Policy">Privacy</a>
+              <a href="/terms.html" className="hover:text-blue-300" aria-label="Terms of Service">Terms</a>
+              <a href="/contact.html" className="hover:text-blue-300" aria-label="Contact Us">Contact</a>
+              <a href="/sitemap.html" className="hover:text-blue-300" aria-label="Sitemap">Sitemap</a>
+            </div>
+          </div>
+          <p className="text-center mt-4 text-gray-400 text-sm">© 2025 Tabwise. All rights reserved.</p>
+        </div>
+      </footer>
+    );
+
+    // Main App Component
+    const App = () => (
+      <div>
+        <Navbar />
+        <Terms />
+        <Footer />
+      </div>
+    );
+
+    // Render the App
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+</script>
 </body>
 </html>
