@@ -67,30 +67,6 @@
     .waitlist-input { transition: all 0.3s ease; }
     .waitlist-input:focus { border-color: #3B82F6; }
     .modal-overlay { background: rgba(0, 0, 0, 0.5); }
-    /* Tooltip styles */
-    .tooltip-wrapper { position: relative; }
-    .tooltip {
-      visibility: hidden;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-      position: absolute;
-      z-index: 20;
-      background-color: #2B4ACB; /* bg-blue-800 */
-      color: white;
-      text-align: center;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 14px;
-      white-space: normal;
-      max-width: 200px;
-    }
-    .tooltip-wrapper:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
-    .tooltip-top { bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 6px; }
-    .tooltip-bottom { top: 100%; left: 50%; transform: translateX(-50%); margin-top: 6px; }
-    .tooltip-left { right: 100%; top: 50%; transform: translateY(-50%); margin-right: 4px; }
 </style>
 </head>
 <body class="bg-gray-50 text-gray-700">
@@ -276,6 +252,7 @@
       const [lastAction, setLastAction] = useState(null);
       const [showSettings, setShowSettings] = useState(false);
       const [error, setError] = useState("");
+      const [hoverMessage, setHoverMessage] = useState("Hover over an element to see its description");
 
       const showError = (message) => {
         setError(message);
@@ -599,22 +576,24 @@
               {activeView === "interactive" ? (
                 <div className={theme === "dark" ? "bg-gray-800 text-gray-200" : "bg-white text-gray-700"}>
                   <div className="p-4 rounded-lg shadow-sm mx-auto">
-                    <div style={{ width: "360px", maxHeight: "800px", overflowY: "auto" }}>
+                    <div style={{ width: "360px", maxHeight: "900px", overflowY: "auto" }}>
                       {/* Header */}
                       <header className="flex justify-end items-center mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="tooltip-wrapper relative w-40">
+                          <div className="relative w-40">
                             <input
                               id="search"
                               type="text"
                               placeholder="Search tabs..."
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
+                              onMouseEnter={() => setHoverMessage("Search Bar: Find tabs by title or URL")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
+                              aria-label="Search Bar: Find tabs by title or URL"
                               className={`w-full p-1 text-sm border rounded-md ${
                                 theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
                               }`}
                             />
-                            <div className="tooltip tooltip-top">Search Bar: Find tabs by title or URL</div>
                             <svg
                               className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4"
                               fill={theme === "dark" ? "#bbb" : "#666"}
@@ -623,16 +602,27 @@
                               <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
                           </div>
-                          <div className="tooltip-wrapper">
-                            <button onClick={() => setShowSettings(!showSettings)} className="p-1">
+                          <div>
+                            <button 
+                              onClick={() => setShowSettings(!showSettings)} 
+                              onMouseEnter={() => setHoverMessage("Settings: Sort categories or manage tabs")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
+                              className="p-1"
+                              aria-label="Settings: Sort categories or manage tabs"
+                            >
                               <svg className="w-4 h-4" fill={theme === "dark" ? "#66b0ff" : "#3B82F6"} viewBox="0 0 24 24">
                                 <path d="M4 12a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4zm8 0a2 2 0 110-4 2 2 0 010 4z" />
                               </svg>
                             </button>
-                            <div className="tooltip tooltip-top">Settings: Sort categories or manage tabs</div>
                           </div>
-                          <div className="tooltip-wrapper">
-                            <button onClick={toggleTheme} className="p-1">
+                          <div>
+                            <button 
+                              onClick={toggleTheme} 
+                              onMouseEnter={() => setHoverMessage("Theme: Toggle between light and dark mode")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
+                              className="p-1"
+                              aria-label="Theme: Toggle between light and dark mode"
+                            >
                               <svg
                                 id="themeIcon"
                                 className="w-4 h-4"
@@ -646,10 +636,20 @@
                                 )}
                               </svg>
                             </button>
-                            <div className="tooltip tooltip-top">Theme: Toggle between light and dark mode</div>
                           </div>
                         </div>
                       </header>
+
+                      {/* Message Area */}
+                      <div 
+                        role="status" 
+                        aria-live="polite" 
+                        className={`p-2 text-sm border-b ${
+                          theme === "dark" ? "bg-gray-800 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
+                        }`}
+                      >
+                        {hoverMessage}
+                      </div>
 
                       {/* Settings Dropdown */}
                       {showSettings && (
@@ -705,7 +705,7 @@
                       {/* Tabs */}
                       <nav className="flex mb-2">
                         {["create", "manage"].map((tab) => (
-                          <div className="tooltip-wrapper flex-1" key={tab}>
+                          <div className="flex-1" key={tab}>
                             <button
                               data-tab={tab}
                               className={`w-full p-2 text-sm rounded-md ${
@@ -718,10 +718,12 @@
                                   : "bg-gray-200 text-gray-700"
                               }`}
                               onClick={() => setActiveTab(tab)}
+                              onMouseEnter={() => setHoverMessage("Tabs: Switch between Create and Manage modes")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
+                              aria-label="Tabs: Switch between Create and Manage modes"
                             >
                               {tab.charAt(0).toUpperCase() + tab.slice(1)}
                             </button>
-                            <div className="tooltip tooltip-top">Tabs: Switch between Create and Manage modes</div>
                           </div>
                         ))}
                       </nav>
@@ -733,35 +735,42 @@
                         style={{ display: activeTab === "create" ? "block" : "none" }}
                       >
                         <div className="flex flex-col gap-2">
-                          <div className="tooltip-wrapper">
+                          <div>
                             <input
                               id="newCategory"
                               type="text"
                               placeholder="New category name"
+                              onMouseEnter={() => setHoverMessage("Category Management: Enter a new category name")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
                               className={`p-2 text-sm border rounded-md ${
                                 theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
                               }`}
+                              aria-label="Category Management: Enter a new category name"
                             />
-                            <div className="tooltip tooltip-top">Category Management: Enter a new category name</div>
                           </div>
-                          <div className="tooltip-wrapper">
+                          <div>
                             <button
                               id="addCategoryBtn"
                               onClick={addCategory}
+                              onMouseEnter={() => setHoverMessage("Category Management: Add a new category")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
                               className={`p-2 text-sm rounded-md ${
                                 theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
                               } text-white`}
+                              aria-label="Category Management: Add a new category"
                             >
                               Add Category
                             </button>
-                            <div className="tooltip tooltip-top">Category Management: Add a new category</div>
                           </div>
-                          <div className="tooltip-wrapper">
+                          <div>
                             <select
                               id="addToCategory"
+                              onMouseEnter={() => setHoverMessage("Category Management: Select a category to add tabs")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
                               className={`p-2 text-sm border rounded-md ${
                                 theme === "dark" ? "bg-gray-700 text-gray-200 border-gray-600" : "bg-white text-gray-700 border-gray-300"
                               }`}
+                              aria-label="Category Management: Select a category to add tabs"
                             >
                               <option value="">Select category to add tabs</option>
                               {categories.map((cat, index) => (
@@ -770,9 +779,8 @@
                                 </option>
                               ))}
                             </select>
-                            <div className="tooltip tooltip-top">Category Management: Select a category to add tabs</div>
                           </div>
-                          <div className="tooltip-wrapper">
+                          <div>
                             <button
                               id="addToCategoryBtn"
                               onClick={() => {
@@ -784,13 +792,15 @@
                                 }
                                 addTabsToCategory(catIndex);
                               }}
+                              onMouseEnter={() => setHoverMessage("Category Management: Add sample tabs to the selected category")}
+                              onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
                               className={`p-2 text-sm rounded-md ${
                                 theme === "dark" ? "bg-blue-400 hover:bg-blue-500" : "bg-blue-500 hover:bg-blue-600"
                               } text-white`}
+                              aria-label="Category Management: Add sample tabs to the selected category"
                             >
                               Add Tabs to Category
                             </button>
-                            <div className="tooltip tooltip-top">Category Management: Add sample tabs to the selected category</div>
                           </div>
                         </div>
                       </div>
@@ -1109,7 +1119,7 @@
                         </div>
                       )}
                       {lastAction && (
-                        <div className="tooltip-wrapper">
+                        <div>
                           <button
                             className={`w-full p-2 text-sm rounded-md mt-2 ${
                               theme === "dark" ? "bg-red-500 hover:bg-red-600" : "bg-red-600 hover:bg-red-700"
@@ -1140,10 +1150,12 @@
                               setFilteredCategories(applySort(newCategories));
                               setLastAction(null);
                             }}
+                            onMouseEnter={() => setHoverMessage("Undo: Revert recent actions")}
+                            onMouseLeave={() => setHoverMessage("Hover over an element to see its description")}
+                            aria-label="Undo: Revert recent actions"
                           >
                             Undo
                           </button>
-                          <div className="tooltip tooltip-top">Undo: Revert recent actions</div>
                         </div>
                       )}
                     </div>
